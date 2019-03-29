@@ -8,6 +8,12 @@
         src: "{{ frr_ospf_conf_file_bck }}"
         dest: "{{ frr_ospf_conf_file }}"
         remote_src: true
+    
+    - name: Restart frr
+      service:
+        name: frr
+        state: restarted
+      when: not dry_run
 
     - name: Execute commands
       command: "{{ item }}"

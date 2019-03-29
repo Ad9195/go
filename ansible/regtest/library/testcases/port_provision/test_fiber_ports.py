@@ -142,9 +142,9 @@ pre-up ip link set $IFACE up
 pre-up ethtool -s $IFACE speed 100000 autoneg off
 pre-up ethtool --set-priv-flags $IFACE copper off
 pre-up ethtool --set-priv-flags $IFACE fec74 off
-pre-up ethtool --set-priv-flags $IFACE fec91 on
+pre-up ethtool --set-priv-flags $IFACE fec91 off
 post-down ip link set $IFACE down
-allow-vnet xeth{0}\n""".format(eth, aoctet)
+allow-vnet xeth{0}\n""".format(eth, aoctet) 
             afile.insert(aindex, replace)
             logging.info("aindex is {} to {}".format(aindex, line_to_del))
     with open("/etc/network/interfaces", "w") as fd:
@@ -226,9 +226,9 @@ pre-up ip link set $IFACE up
 pre-up ethtool -s $IFACE speed {3} autoneg off
 pre-up ethtool --set-priv-flags $IFACE copper off
 pre-up ethtool --set-priv-flags $IFACE fec74 off
-pre-up ethtool --set-priv-flags $IFACE fec91 on
+pre-up ethtool --set-priv-flags $IFACE fec91 off
 post-down ip link set $IFACE down
-allow-vnet xeth{0}-{2}\n""".format(eth, aoctet, i, (speed*1000))
+allow-vnet xeth{0}-{2}\n""".format(eth, aoctet, i, (speed*1000))  
         else:
             replace = """
 auto xeth{0}
@@ -239,9 +239,9 @@ pre-up ip link set $IFACE up
 pre-up ethtool -s $IFACE speed 100000 autoneg off
 pre-up ethtool --set-priv-flags $IFACE copper off
 pre-up ethtool --set-priv-flags $IFACE fec74 off
-pre-up ethtool --set-priv-flags $IFACE fec91 on
+pre-up ethtool --set-priv-flags $IFACE fec91 off
 post-down ip link set $IFACE down
-allow-vnet xeth{0}\n""".format(eth, aoctet)
+allow-vnet xeth{0}\n""".format(eth, aoctet) 
         afile.insert(aindex, replace)
         logging.info("aindex is {} to {}".format(aindex, line_to_del))
     with open("/etc/network/interfaces", "w") as fd:
