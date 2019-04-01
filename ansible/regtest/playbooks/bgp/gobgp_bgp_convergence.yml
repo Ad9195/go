@@ -72,6 +72,8 @@
         switch_name: "{{ inventory_hostname }}"
         leaf: "{{ groups['leaf'][1] }}"
         package_name: "gobgpd"
+        delay: "20"
+        retries: "15"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ bgp_log_dir }}"
       register: module_out
