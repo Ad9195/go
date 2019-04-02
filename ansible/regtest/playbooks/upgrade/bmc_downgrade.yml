@@ -15,49 +15,39 @@
   become: true
   ignore_errors: yes
   tasks:
-    - name: Copy bmc_upgrade script
+    - name: Copy bmc_downgrade script
       template:
-        src: ../../templates/bmc_upgrade.sh
-        dest: "/tmp/bmc_upgrade_{{ inventory_hostname }}.sh"
+        src: ../../templates/bmc_downgrade.sh
+        dest: "/tmp/bmc_downgrade_{{ inventory_hostname }}.sh"
         mode: 0755
       delegate_to: 127.0.0.1
 
-    - name: Run bmc_upgrade script
-      shell: "./bmc_upgrade_{{ inventory_hostname }}.sh"
+    - name: Run bmc_downgrade script
+      shell: "./bmc_downgrade_{{ inventory_hostname }}.sh"
       args:
         chdir: /tmp/
-      register: upgrade
+      register: downgrade
       delegate_to: 127.0.0.1
 
     - debug:
-        var: upgrade.stdout_lines
-
-    - name: Remove bmc_upgrade script
-      file:
-        path: "/tmp/bmc_upgrade_{{ inventory_hostname }}.sh"
-        state: absent
-      delegate_to: 127.0.0.1
-      
+        msg: "BMC successfully Downgraded"
+      when: downgrade.stdout.find('Starting kernel') != -1
+    
     - debug:
         msg: "BMC latest version already installed"
-      when: upgrade.stdout.find('not newer') != -1
+      when: downgrade.stdout.find('not newer') != -1
 
-    - debug:
-        msg: "BMC successfully Upgraded"
-      when: upgrade.stdout.find('Starting kernel') != -1
-      
-    - lineinfile:
-        path: "{{ regression_summary_report }}"
-        line: "BMC Upgrade: BMC latest version already installed"
+    - name: Remove bmc_downgrade script
+      file:
+        path: "/tmp/bmc_downgrade_{{ inventory_hostname }}.sh"
+        state: absent
       delegate_to: 127.0.0.1
-      when: upgrade.stdout.find('not newer') != -1
 
     - lineinfile:
         path: "{{ regression_summary_report }}"
-        line: "BMC Upgrade: BMC successfully Upgraded"
+        line: "BMC Downgrade: BMC successfully Downgraded"
       delegate_to: 127.0.0.1
-      when: upgrade.stdout.find('Starting kernel') != -1
-
+      when: downgrade.stdout.find('Starting kernel') != -1
 
 - hosts: leaf:spine
   become: true
@@ -80,4 +70,3 @@
         path: "{{ regression_summary_report }}"
         line: "Links Status {{ inventory_hostname }}: {{ module_out.msg }}"
       delegate_to: 127.0.0.1
-

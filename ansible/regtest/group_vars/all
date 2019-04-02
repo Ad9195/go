@@ -100,9 +100,9 @@ gobgp_dir: /etc/gobgp
 docker_compose_file: ~/docker-compose.yml
 
 #Command to downgrade BMC to v0.4 version (testing purpose)
-downgrade_cmd: 'upgrade -v v0.4 -s 172.17.2.28/downloads/ -f'
+downgrade_cmd: 'upgrade -v TEST1 -s 172.17.2.28/downloads/ -f'
 
 #Command to upgrade BMC to latest version
 #upgrade_cmd: 'upgrade -v master -s downloads.platinasystems.com/TEST -f'
-upgrade_cmd: 'upgrade -v TEST1 -s 172.17.2.28/downloads'
+upgrade_cmd: 'upgrade -v v1.2.0-rc0 -s 172.17.2.28/downloads'
 
