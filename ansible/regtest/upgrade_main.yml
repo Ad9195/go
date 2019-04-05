@@ -1,0 +1,15 @@
+---
+
+# Downgrade BMC 
+- include: playbooks\upgrade\bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks\upgrade\bmc_upgrade.yml
+
+# Downgrade and Upgrade Coreboot
+- include: playbooks\upgrade\coreboot_upgrade_updated.yml
+
+# Run goes boot playbooks
+- include: playbooks/upgrade/goes_boot.yml
+
+- include: playbooks/upgrade/quagga_bgp_peering_ibgp_with_goes_boot.yml

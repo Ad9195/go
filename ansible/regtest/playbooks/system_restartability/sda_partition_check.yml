@@ -26,7 +26,7 @@
       shell: goes uninstall
 
     - include_tasks: reboot.yml
-      with_sequence: count=2
+      with_sequence: count=10
 
     - name: Verify SDA partition
       verify_sda_partition:

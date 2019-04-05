@@ -143,8 +143,7 @@ def verify_bgp_routes(module, route_present):
     out = execute_commands(module, cmd)
 
     if out:
-        network = '192.168.{}.1'.format(propagate_switch[-2::])
-        route = 'B>* {}'.format(network)
+        route = '192.168.{}.1'.format(propagate_switch[-2::])
 
         if route_present:
             if route not in out:

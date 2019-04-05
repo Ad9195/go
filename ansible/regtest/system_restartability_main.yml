@@ -1,0 +1,7 @@
+---
+
+# Run SDA Verification Test Case
+- include: playbooks\system_restartability\sda_partition_check.yml
+
+# Run Goes afte multiple restart
+- include: playbooks\system_restartability\test_goes_status.yml

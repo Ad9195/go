@@ -51,14 +51,9 @@
 # Run all SNMP test cases
 - include: snmp_main.yml
 
-# Run goes boot playbooks
-- include: playbooks/upgrade/goes_boot.yml
 
-- include: playbooks/upgrade/quagga_bgp_peering_ibgp_with_goes_boot.yml
-
-
-# Run BMC upgrade playbook
-- include: playbooks/upgrade/bmc_upgrade.yml
+# Run  all downgrade and upgrade playbook
+- include: upgrade_main.yml
 
 # Run all issues test cases
 - include: issues_main.yml
@@ -68,6 +63,9 @@
 
 # Run all ntp test cases
 - include: ntp_main.yml
+
+# Run all System Restartability Playbook
+- include: system_restartability_main.yml
 
 
 - hosts: server_emulator
