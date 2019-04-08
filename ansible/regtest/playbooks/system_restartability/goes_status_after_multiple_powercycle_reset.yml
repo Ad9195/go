@@ -1,0 +1,55 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - name: Restore backup of /etc/frr/zebra.conf
+      copy:
+        src: "{{ frr_zebra_conf_file_bck }}"
+        dest: "{{ frr_zebra_conf_file }}"
+        remote_src: true
+      when: not dry_run
+
+    - name: Remove zebra backup file
+      file:
+        path: "{{ frr_zebra_conf_file_bck }}"
+        state: absent
+      when: not dry_run
+      
+    - name: Restore backup of /etc/frr/bgpd.conf
+      copy:
+        src: "{{ frr_bgp_conf_file_bck }}"
+        dest: "{{ frr_bgp_conf_file }}"
+        remote_src: true
+      when: not dry_run
+
+    - name: Remove bgp backup file
+      file:
+        path: "{{ frr_bgp_conf_file_bck }}"
+        state: absent
+      when: not dry_run
+
+    - name: Execute commands
+      command: "{{ item }}"
+      with_items:
+      - 'goes restart'
+      when: not dry_run
+
+    - name: Wait few seconds for GOES to come up
+      pause:
+        seconds: 10
+      when: not dry_run
+
+    - name: Goes status
+      command: goes status
+      register: result
+      retries: "{{ goes_retry }}"
+      delay: "{{ goes_delay }}"
+      until: result.rc == 0
+      when: not dry_run
+
+    - name: Restart frr
+      service:
+        name: frr
+        state: restarted
+      when: not dry_run
