@@ -26,11 +26,11 @@ from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = """
 ---
-module: test_same_ip_fib
+module: test_fib_sum
 author: Platina Systems
-short_description: Module to test FIB entries for same IP for 2 different containers.
+short_description: Module to bring up container and check the summary.
 description:
-    Module to test FIB entries for same IP for 2 different containers.
+     Module to bring up container and check the summary..
 options:
     switch_name:
       description:
@@ -61,7 +61,7 @@ options:
 
 EXAMPLES = """
 - name: Verify linking of interfaces inside container
-  test_same_ip_fib:
+  test_fib_sum:
     switch_name: "{{ inventory_hostname }}"
     hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
     log_dir_path: "{{ log_dir_path }}"
@@ -156,19 +156,14 @@ def verify_fib_entries(module):
         failure_summary += 'assigning same IP to 2 different containers.\n'
         failure_summary += 'FIB Output- {}\n'.format(fib_out)
 
-    time.sleep(15)
-    for i in range(len(container_name)):
-        # Bring down the interface from the docker container
-        cmd = 'docker exec {} ifconfig xeth{} down '.format(container_name[i], eth[i])
-        out = execute_commands(module, cmd)
-        if out:
-            RESULT_STATUS = False
-            failure_summary += 'On switch {} '.format(switch_name)
-            failure_summary += 'Command- {}\n'.format(cmd)
-            failure_summary += 'Down output- {}\n'.format(out)
+    cmd = 'goes vnet show ip fib sum'
+    out = execute_commands(module, cmd)
+    if container_name[0] and container_name[1] not in out:
+        RESULT_STATUS = False
+        failure_summary += 'On switch {} '.format(switch_name)
+        failure_summary += 'FIB summary is not appropriate for interface {}\n'.format(eth)
 
-    ip = '10.1.0.{}'.format(switch_name[-2::])
-    fib1 = []
+    time.sleep(15)
     
     # remove the docker and name spaces
     for i in range(len(container_name)):
@@ -196,20 +191,6 @@ def verify_fib_entries(module):
     out = execute_commands(module, cmd)
     time.sleep(10)
 
-
-    
-    for i in range(len(container_name)):
-        cmd = 'ip netns add {}'.format(container_name[i])
-        execute_commands(module, cmd)
-
-        cmd = 'ip link set xeth{} netns {}'.format(eth[i], container_name[i])
-        execute_commands(module, cmd)
-
-        cmd = 'ip netns exec {} ip link set up xeth{}'.format(container_name[i], eth[i])
-        execute_commands(module, cmd)
-
-        cmd = 'ip netns exec {} ip add add {}/24 dev xeth{}'.format(container_name[i], ip, eth[i])
-        execute_commands(module, cmd)
 
 
     HASH_DICT['result.detail'] = failure_summary

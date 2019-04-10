@@ -19,7 +19,7 @@
       register: start_time
 
     - set_fact:
-        hash_name: "issue_56_vnet_show_ip_fib_summary_{{ start_time.stdout }}"
+        hash_name: "issue_56_vnet_show_ip_fib_summary{{ start_time.stdout }}"
         start_time: "{{ start_time.stdout }}"
 
 
@@ -69,55 +69,10 @@
       - "{{ containers.container2 }}"
 
     - name: Move interface and verify FIB entries
-      test_updown_fib:
+      test_fib_sum:
         switch_name: "{{ inventory_hostname }}"
-        container_name: "{{ containers.container1 }}"
-        eth: '5'
-        frequency: 1
-        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        log_dir_path: "{{ issues_log_dir }}"
-      register: module_out
-
-    - command: "date +%Y%m%d%T"
-      register: end_time
-
-    - name: Fetch the log file
-      slurp:
-        src: "{{ module_out.log_file_path }}"
-      register: logs
-
-    - name: Store the test result in a hash in redis db on server emulator
-      store_result_in_redis:
-        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        start_time: "{{ hostvars['server_emulator']['start_time'] }}"
-        end_time: "{{ end_time.stdout }}"
-        hash_dict: "{{ module_out.hash_dict }}"
-        log_content: "{{ logs['content'] | b64decode }}"
-      delegate_to: 127.0.0.1
-
-    - copy:
-        src: "../../files/show_tech.py"
-        dest: /tmp/show_tech.py
-        mode: 0755
-      when: module_out.hash_dict['result.status'] == "Failed"
-      ignore_errors: yes
-
-    - command: "/tmp/./show_tech.py --path /var/log/show_tech/ --hash_name {{ hostvars['server_emulator']['hash_name'] }}"
-      when: module_out.hash_dict['result.status'] == "Failed"
-      ignore_errors: yes
-
-    - file:
-        path: /tmp/show_tech.py
-        state: absent
-      when: module_out.hash_dict['result.status'] == "Failed"
-      ignore_errors: yes
-
-    - name: Move interface and verify FIB entries
-      test_updown_fib:
-        switch_name: "{{ inventory_hostname }}"
-        container_name: "{{ containers.container2 }}"
-        eth: '7'
-        frequency: 1
+        container_name: "{{ containers.container1 }},{{ containers.container2 }}"
+        eth: '5,7'
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ issues_log_dir }}"
       register: module_out
@@ -172,9 +127,10 @@
     - name: Restart goes
       command: "goes restart"
 
-    - pause:
+    - name: Wait few seconds for goes to restart
+      pause:
         seconds: 10
-       
+
     - include: ../../playbooks/get_goes_version_and_tags.yml
 
 

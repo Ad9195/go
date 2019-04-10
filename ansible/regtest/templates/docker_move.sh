@@ -47,7 +47,8 @@ dc=$2
 intf=$3
 
 find_dc_pid () {
-    dc=$1
+#echo "---find_dc_pid start"    # amit
+dc=$1
 
     dc_pid=$(docker inspect -f '{{.State.Pid}}' $dc)
     if [ -z "$dc_pid" ]; then
@@ -55,38 +56,61 @@ find_dc_pid () {
         exit 1
     fi
     echo $dc_pid
+#echo "----find_dc_pid stop" #amit
+}
+
+set_nsid () {
+echo "----set_nsid start" # amit
+   ns=$1
+
+    nsid=1
+    ok=0
+    # find next available nsid
+    while [ "$ok" -eq "0" ]; do
+        ip netns set $ns $nsid 2> /dev/null
+        if [ "$?" -eq 0 ]; then
+            ok=1
+        else
+            ((nsid++))
+        fi
+    done
+echo "----set_nsid stop" # amit
 }
 
 setup_dc () {
-    dc=$1
+echo "----setup_dc start" # amit
+   dc=$1
     intf=$2
     addr_mask=$3
 
     if [ ! -d "/var/run/netns" ]; then
         mkdir -p /var/run/netns
+        echo "----cp1----"
     fi
 
-    dc_pid=$(find_dc_pid $dc)
-
-    if [ ! -h /var/run/netns/$dc_pid ]; then
-        ln -s /proc/$dc_pid/ns/net /var/run/netns/$dc_pid
+    if [ ! -h /var/run/netns/$dc ]; then
+        echo "----cp1.1----"
+        dc_pid=$(find_dc_pid $dc)
+        echo "----dc_pid=$dc_pid----"
+        echo "----dc=$dc----"
+        echo "----cp1.2----"
+         ln -s /proc/$dc_pid/ns/net /var/run/netns/$dc # added sudo by amit
+        echo "----cp1.3----"
+        #set_nsid $dc    # doesn't seem necessary for docker
     fi
 
-    ip netns list | grep -q "$dc_pid" > /dev/null
+echo "----cp2"
+    ip link set $intf netns $dc
+    echo "----cp3----"
     if [ $? -ne 0 ]; then
-        echo "Error: docker container pid $dc_pid missing."
-        exit 1
+       echo "Error: set netns failed."
+       exit 1
     fi
 
-    ip link set $intf netns $dc_pid
-    if [ $? -ne 0 ]; then
-        echo "Error: set netns failed."
-        exit 1
-    fi
-
-    ip netns exec $dc_pid ip link set up lo
-    ip netns exec $dc_pid ip add add 127.0.0.1/8 dev lo 2> /dev/null
-    ip netns exec $dc_pid ip link set up $intf
+    ip netns exec $dc ip link set up lo
+    ip netns exec $dc ip add add 127.0.0.1/8 dev lo 2> /dev/null
+    ip netns exec $dc ip link set up $intf
+    echo "----cp4----"
 
     if [ -z "$addr_mask" ]; then
         return
@@ -104,21 +128,24 @@ setup_dc () {
             let peer_oct=lo-1
         fi
         peer="$fto.$peer_oct/31"
-        ip netns exec $dc_pid ip addr add $addr peer $peer dev $intf
+        ip netns exec $dc ip addr add $addr peer $peer dev $intf
+        echo "----cp5----"
         rc=$?
     else
-        ip netns exec $dc_pid ip addr add $addr_mask dev $intf
+        ip netns exec $dc ip addr add $addr_mask dev $intf
+        echo "----cp6----"
         rc=$?
     fi
     if [ $rc -ne 0 ]; then
         echo "Failed to set ip address."
         exit 1
     fi
+echo "----setup_dc stop" # amit
 }
 
 check_dc () {
-    dc=$1
-
+echo "----check_dc start" # amit
+dc=$1
     state=$(docker inspect -f '{{.State.Status}}' $dc)
     if [ $? -ne 0 ]; then
         echo "Error: docker container [$dc] not found."
@@ -127,31 +154,35 @@ check_dc () {
     if [ "$state" != "running" ]; then
         echo "Error: docker container [$dc] not running - state [$state]"
     fi
+echo "----check_dc stop" # amit
 }
 
 check_intf () {
     intf=$1
-
+echo "----check_intf start" #by amit
     ip link show $intf &> /dev/null
     if [ $? != 0 ]; then
         echo "Error: interface [$intf] not found in default namespace."
         exit 1
     fi
+echo "----check_intf stop"
 }
 
 check_intf_dc () {
-    dc=$1
+echo "----intf_dc start"
+   dc=$1
     intf=$2
 
-    ip netns exec link show $intf &> /dev/null
     docker exec -it $dc ip link show $intf &> /dev/null
     if [ $? != 0 ]; then
         echo "Error: interface [$intf] not found in docker container [$dc]."
         exit 1
     fi
+echo "----intf_dc(stop)"
 }
 
 up_it () {
+echo "----up_it start"
     dc=$1
     intf=$2
     addr=$3
@@ -159,33 +190,43 @@ up_it () {
     check_dc $dc
     check_intf $intf
     setup_dc $dc $intf $addr
+echo "----up_it stop"
 }
 
 kill_processes () {
-    dc_pid=$1
+echo "----kill_processes start"
+   dc=$1
+    dc_pid=$2
 
-    pids=$(ip netns pid $dc_pid)
-    for p in ${pids[@]}; do
+    pids=$(ip netns pid $dc)
+echo "$pids"
+    for p in $pids; do # earlier it was ${pids[@]} --by amit
+        echo "p=$p dcpid=$dc_pid"
         if [ "$p" -eq "$dc_pid" ]; then
             continue   # don't kill the container
         fi
         kill $p
         if ( ps -p $p > /dev/null )
         then
-            kill -9 $p
+            kill -9 $p 2> /dev/null
         fi
     done
+echo "----kill_processes stop"
 }
 
 return_intf () {
-    dc_pid=$1
+    dc=$1
     intf=$2
-
-    ip netns exec $dc_pid ip link set down $intf
-    ip netns exec $dc_pid ip link set $intf netns 1
+    echo "----return_intf start" #by amit
+    echo "----dc=$dc----"
+    echo "----intf=$intf----"
+    ip netns exec $dc ip link set down $intf
+    ip netns exec $dc ip link set $intf netns 1
+echo "----return_intf stop"
 }
 
 down_it () {
+echo "---- down_it start"
     dc=$1
     intf=$2
 
@@ -194,9 +235,10 @@ down_it () {
 
     dc_pid=$(find_dc_pid $dc)
 
-    kill_processes $dc_pid
+    kill_processes $dc $dc_pid
 
-    return_intf $dc_pid $intf
+    return_intf $dc $intf
+echo "---- down_it stop"
 }
 
 case "$1" in
@@ -218,4 +260,6 @@ if ( ! goes status > /dev/null ); then
 fi
 
 exit 0
+
+
 
