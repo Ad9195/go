@@ -67,6 +67,8 @@
 # Run all System Restartability Playbook
 - include: system_restartability_main.yml
 
+# Run all long Runnig Traffic testcases
+- include: long_running_traffic_main.yml
 
 - hosts: server_emulator
   become: true

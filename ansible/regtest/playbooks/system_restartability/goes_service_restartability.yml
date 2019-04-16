@@ -1,53 +1,71 @@
 ---
 
-- hosts: server_emulator
-  become: true
-  ignore_errors: true
-  tasks:
-    - command: "date +%Y%m%d%T"
-      register: start_time
-
-    - set_fact:
-        hash_name: "sda_partition_check{{ start_time.stdout }}"
-        start_time: "{{ start_time.stdout }}"
-
-
-- hosts: spine:leaf
+- hosts: leaf:spine
   become: true
   ignore_errors: yes
   tasks:
     - shell: dpkg --list | grep kernel
       register: kernel_version
+      when: not dry_run
 
     - debug:
         var: kernel_version.stdout_lines
-  
-    - name: Uninstall Goes
-      shell: goes uninstall
+      when: not dry_run
 
-    - include_tasks: reboot_sda.yml
-      with_sequence: count=10
 
-    - name: Verify SDA partition
-      verify_sda_partition:
-        switch_name: "{{ inventory_hostname }}"
-        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        log_dir_path: "{{ system_restartability_log_dir }}"
-      register: module_out
+- hosts: server_emulator
+  become: true
+
+  tasks:
+    - command: "date +%Y%m%d%T"
+      register: start_time
+
+    - set_fact:
+        hash_name: "goes_service_restartability{{ start_time.stdout }}"
+        start_time: "{{ start_time.stdout }}"
+
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - name: Check networking status
+      command: "service networking status"
+      register: network_status
+      ignore_errors: no
+      when: not dry_run
+
+    - debug:
+        msg: "Network is in active state"
+      when: "' Active: active ' in network_status.stdout"
+
+    - name: Check goes status
+      command: goes status
+      register: goes_status
+      ignore_errors: no
+      when: not dry_run
+
+    - debug:
+        msg: "{{  goes_status.stdout }}"
+      when: not dry_run
+
+    - include_tasks: service_restartability.yml 
+      with_items:
+        - vnet-platina-mk1
+        - redisd
+        - tempd
+        - uptimed
       when: not dry_run
 
     - file:
-       path: "{{ system_restartability_log_dir }}"
-       state: directory
+        path: "{{ system_restartability_log_dir }}"
+        state: directory
       when: not dry_run
 
-    - command: "date +%Y%m%d%T"
-      register: end_time
-      
     - name: Fetch the log file
       slurp:
         src: "{{ module_out.log_file_path }}"
       register: logs
+      when: not dry_run
 
     - name: Store the test result in a hash in redis db on server emulator
       store_result_in_redis:
@@ -57,31 +75,8 @@
         hash_dict: "{{ module_out.hash_dict }}"
         log_content: "{{ logs['content'] | b64decode }}"
       delegate_to: 127.0.0.1
-
-    - name: Add goes file to invedor
-      copy:
-        src: ../../templates/goes-platina-mk1
-        dest: "{{ goes_installer_dir }}{{ goes_installer_name }}"
-        owner: root
-        group: root
-        mode: 0755
-      when: 
-        - not dry_run
-        - reset_config
-    
-    - name: Install goes
-      shell: "{{ goes_installer_dir }}./{{ goes_installer_name }} install"
-      when: 
-        - not dry_run
-        - reset_config
-
-    - name: Remove goes Binary files
-      shell: "rm -f {{ goes_installer_dir }}./{{ goes_installer_name }}"
-      args:
-        warn: false
-      when:
-        - not dry_run
-        - reset_config
+      ignore_errors: yes
+      when: not dry_run
 
     - copy:
         src: "../../files/show_tech.py"
@@ -106,7 +101,7 @@
     - name: Get the test result from redis db
       get_test_result_from_redis:
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-      register: result
+        register: result
       when: not dry_run
 
     - name: Print test case result
@@ -122,10 +117,4 @@
     - lineinfile:
         path: "{{ regression_summary_report }}"
         line: "{{ hash_name }}: {{ result.result_status }}"
-      when: not dry_run
-
-- hosts: leaf:spine
-  become: true
-  tasks:
-    - include: ../../playbooks/get_goes_status.yml start_time={{ hostvars['server_emulator']['start_time'] }} hash_name={{ hostvars['server_emulator']['hash_name'] }}
       when: not dry_run

@@ -111,13 +111,9 @@ def verify_sda_partition(module):
 	failure_summary = ''
 	switch_name = module.params['switch_name']
 	out = execute_commands(module, "df -h")
-        print out
-        print "this is tye of out"
-        print type(out)
-        print "This is just test"
-	if "sda6" not in out:
-		RESULT_STATUS = False
-		failure_summary += "SDA partition in not available on {}.\n".format(switch_name)
+        if "sda6" not in out:
+               RESULT_STATUS = False
+	       failure_summary += "On {} SDA6 partition in not available.\n".format(switch_name)
         else:
             RESULT_STATUS = True
 
@@ -143,7 +139,7 @@ def main():
     # Create a log file
     log_file_path = module.params['log_dir_path']
     log_file_path += '/{}.log'.format(module.params['hash_name'])
-    log_file = open(log_file_path, 'w')
+    log_file = open(log_file_path, 'a')
     for key, value in HASH_DICT.iteritems():
         log_file.write(key)
         log_file.write('\n')

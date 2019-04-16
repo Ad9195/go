@@ -1,0 +1,13 @@
+---
+
+#bird bgb traffic
+- include: playbooks/long_running_traffic_test/birdbgp_traffic_test.yml
+
+# FRR bgp traffic
+- include: playbooks/long_running_traffic_test/frrbgp_traffic_test.yml
+
+# GO bgp traffic
+- include: playbooks/long_running_traffic_test/gobgpbgp_traffic_test.yml
+
+#Quagga bgp traffic
+- include: playbooks/long_running_traffic_test/quaggabgp_traffic_test.yml
