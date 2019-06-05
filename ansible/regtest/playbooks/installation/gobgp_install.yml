@@ -4,10 +4,17 @@
   become: true
   ignore_errors: yes
   tasks:
-   - name: Install Quagga
-     apt:
-        name: quagga
+   - name: Download Quagga debian package file
+     get_url:
+        url: "{{ quagga_link }}"
+        dest: "/tmp/"
+        mode: 0640
+        validate_certs: no
 
+   - name: Install the Quagga debian package file
+     apt:
+        deb: "/tmp/{{ quagga_installer_name }}"
+   
    - name: Enable Zebra Protocols
      lineinfile:
         path: /etc/quagga/daemons

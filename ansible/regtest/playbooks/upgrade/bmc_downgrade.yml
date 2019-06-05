@@ -30,6 +30,9 @@
       delegate_to: 127.0.0.1
 
     - debug:
+        var: downgrade.stdout_lines
+
+    - debug:
         msg: "BMC successfully Downgraded"
       when: downgrade.stdout.find('Starting kernel') != -1
     
@@ -42,6 +45,7 @@
         path: "/tmp/bmc_downgrade_{{ inventory_hostname }}.sh"
         state: absent
       delegate_to: 127.0.0.1
+
 
     - lineinfile:
         path: "{{ regression_summary_report }}"

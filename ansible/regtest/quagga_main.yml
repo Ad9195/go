@@ -132,4 +132,4 @@
 # Run all quagga ipv4 test cases
 - include: playbooks/ipv4/quagga_ipv4_configuration_interfaces.yml
 
-#- include: playbooks/ipv4/quagga_ipv4_route_scale.yml
+- include: playbooks/ipv4/quagga_ipv4_route_scale.yml

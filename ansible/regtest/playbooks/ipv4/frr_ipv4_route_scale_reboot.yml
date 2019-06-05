@@ -1,0 +1,22 @@
+ - name: Reboot the invader
+   reboot:
+   when: not dry_run
+
+ - name: Wait few seconds for invader to restart
+   pause:
+     seconds: 80
+   when: not dry_run
+
+ - name: check goes status
+   command: goes status
+   register: goes
+   ignore_errors: no
+   retries: "{{ goes_retry }}"
+   delay: "{{ goes_delay }}"
+   until: goes.rc == 0 
+
+ - name: Print goes status
+   debug:
+     var: goes.stdout
+   ignore_errors: no
+

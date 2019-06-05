@@ -113,7 +113,7 @@ def verify_sda_partition(module):
 	out = execute_commands(module, "df -h")
         if "sda6" not in out:
                RESULT_STATUS = False
-	       failure_summary += "On {} SDA6 partition in not available.\n".format(switch_name)
+	       failure_summary += "On {} SDA6 partition is not available.\n".format(switch_name)
         else:
             RESULT_STATUS = True
 

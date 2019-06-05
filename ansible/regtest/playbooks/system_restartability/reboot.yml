@@ -1,8 +1,0 @@
-- name: reboot the switch
-  shell: sleep 2 && shutdown -r now
-  async: 1
-  poll: 0
-  ignore_errors: true
-
-- name: waiting for switch to come back after reboot
-  local_action: wait_for host={{ ansible_ssh_host }} state=started port=22 delay=30 timeout=300 connect_timeout=15

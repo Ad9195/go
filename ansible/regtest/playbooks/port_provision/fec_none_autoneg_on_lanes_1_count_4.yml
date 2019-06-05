@@ -53,6 +53,7 @@
       - 'ifdown -a --allow vnet'
       - 'ifup -a --allow vnet'
       - "goes restart"
+      when: not dry_run
 
 #    - name: Restart networking service
 #      service:
@@ -70,6 +71,7 @@
         media: "copper"
         fec: "none"
         autoneg: "on"
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         is_subports: True
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"

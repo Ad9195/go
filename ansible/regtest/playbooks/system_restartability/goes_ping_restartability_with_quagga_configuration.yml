@@ -21,40 +21,40 @@
       register: start_time
 
     - set_fact:
-        hash_name: "goes_service_restartability_with_quagga_configuration_{{ start_time.stdout }}"
+        hash_name: "goes_ping_restartability_with_quagga_configuration_{{ start_time.stdout }}"
         start_time: "{{ start_time.stdout }}"
 
 
 - hosts: leaf:spine
   become: true
   tasks:
-    - name: Take backup of /etc/frr/zebra.conf
+    - name: Take backup of /etc/quagga/zebra.conf
       command: "mv {{ quagga_zebra_conf_file }} {{ quagga_zebra_conf_file_bck }}"
       when: not dry_run
       
-    - name: Copying config to /etc/frr/zebra.conf
+    - name: Copying config to /etc/quagga/zebra.conf
       copy:
-        src: "../../files/{{inventory_hostname}}/zebra.conf"
+        src: "../../files/{{inventory_hostname}}/quagga_zebra.conf"
         dest: "{{ quagga_zebra_conf_file }}"
       when: not dry_run
 
-    - name: Take backup of /etc/frr/bgpd.conf
+    - name: Take backup of /etc/quagga/bgpd.conf
       copy:
         src: "{{ quagga_bgp_conf_file }}"
         dest: "{{ quagga_bgp_conf_file_bck }}"
         remote_src: true
       when: not dry_run
 
-    - name: Add bgp config in /etc/frr/bgpd.conf
+    - name: Add dummy interface
+      add_dummy_interface:
+        switch_name: "{{ inventory_hostname }}"
+      when: not dry_run
+
+    - name: Add bgp config in /etc/quagga/bgpd.conf
       blockinfile:
         path: "{{ quagga_bgp_conf_file }}"
         marker: ""
         block: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
-      when: not dry_run
-    
-    - name: Add dummy interface
-      add_dummy_interface:
-        switch_name: "{{ inventory_hostname }}"
       when: not dry_run
 
     - name: Restart quagga
@@ -78,111 +78,32 @@
         msg: "Quagga is in active state"
       when: "' Active: active ' in quagga_status.stdout"
 
-    - name: Verify frr bgp neighborship 
-      test_bgp_peering_if_down:
+    - name: Verify ping on pid kill
+      test_ping_on_pid_kill:
         switch_name: "{{ inventory_hostname }}"
         config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
+        spine_list: "{{ groups['spine'] }}"
         leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
-        package_name: "quagga"
+        is_ping: True
+        package_name: "frr"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ system_restartability_log_dir }}"
       register: module_out
       when: not dry_run
 
-    - name: Verify frr bgp neighborship
-      test_bgp_peering_if_down:
+    - name: Verify ping on pid kill
+      test_ping_on_pid_kill:
         switch_name: "{{ inventory_hostname }}"
         config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
+        spine_list: "{{ groups['spine'] }}"
         leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
-        package_name: "quagga"
+        is_ping: True
+        package_name: "frr"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ system_restartability_log_dir }}"
-      register: module_out
-      when: dry_run
-        
-
-    - name: Check networking status
-      command: "service networking status"
-      register: network_status
-      ignore_errors: no
-      when: not dry_run
-
-    - debug:
-        msg: "Network is in active state"
-      when: "' Active: active ' in network_status.stdout"
-
-    - name: Check goes status
-      command: goes status
-      register: goes_status
-      ignore_errors: no
-      when: not dry_run
-
-    - debug:
-        msg: "{{  goes_status.stdout }}"
-      when: not dry_run
-
-    - name: Check process id of vnetd
-      command: "pidof vnet-platina-mk1"
-      register: pid1
-      when: not dry_run
-
-    - debug:
-        msg: "{{ pid1.stdout }}"
-      when: not dry_run
-
-    - name: Kill process vnet-platina-mk1
-      shell: "kill -9 {{ pid1.stdout }}"
-      ignore_errors: no
-      when: not dry_run
-
-    - name: Wait few seconds for GOES to come up
-      pause:
-        seconds: 10
-      when: not dry_run
-
-    - name: Check goes status
-      command: goes status
-      register: goes_status
-      ignore_errors: no
-      when: not dry_run
-
-    - debug:
-        msg: "{{ goes_status.stdout }}"
-      when: not dry_run
-
-    - name: Check new process id of vnetd
-      command: "pidof vnet-platina-mk1"
-      register: pid2
-      when: not dry_run
-
-    - debug:
-        msg: "{{ pid2.stdout }}"
-      when: not dry_run
-
-    - name: Verify frr bgp neighborship
-      test_bgp_peering_if_down:
-        switch_name: "{{ inventory_hostname }}"
-        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
-        leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
-        package_name: "quagga"
-        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        log_dir_path: "{{ system_restartability_log_dir }}"
-      register: module_out
-      when: not dry_run
-
-    - name: Verify frr bgp neighborship
-      test_bgp_peering_if_down:
-        switch_name: "{{ inventory_hostname }}"
-        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
-        leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
-        package_name: "quagga"
-        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        log_dir_path: "{{ system_restartability_log_dir }}"
-      register: module_out
+        dry_run_mode: "{{ dry_run }}"
+      register: dry_run_out
+      delegate_to: 127.0.0.1
       when: dry_run
 
     - name: Goes restart
@@ -199,28 +120,26 @@
         msg: "{{ goes_status.stdout }}"
       when: not dry_run
 
-    - name: Verify frr bgp neighborship and leaf-leaf, spine-spine ping
-      test_bgp_peering_if_down:
+    - name: Verify bgp neighborship and ping
+      test_bgp_peering_loopback:
         switch_name: "{{ inventory_hostname }}"
         config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
-        leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
         package_name: "quagga"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ system_restartability_log_dir }}"
       register: module_out
       when: not dry_run
 
-    - name: Verify frr bgp neighborship
-      test_bgp_peering_if_down:
+    - name: Verify bgp neighborship and ping
+      test_bgp_peering_loopback:
         switch_name: "{{ inventory_hostname }}"
         config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp_loopback.conf') }}"
-        leaf_list: "{{ groups['leaf'] }}"
-        eth_list: "3,19"
         package_name: "quagga"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ system_restartability_log_dir }}"
-      register: module_out
+        dry_run_mode: "{{ dry_run }}"
+      register: dry_run_out
+      delegate_to: 127.0.0.1
       when: dry_run
 
     - name: Verify link status b/w invaders
@@ -234,6 +153,10 @@
     - name: Print Link Status
       debug:
         var: link_status
+
+    - set_fact:
+        dry_run_cmds: "{{ dry_run_out.cmds }}"
+      when: dry_run
 
     - command: "date +%Y%m%d%T"
       register: end_time
@@ -252,7 +175,7 @@
         end_time: "{{ end_time.stdout }}"
         hash_dict: "{{ module_out.hash_dict }}"
         log_content: "{{ logs['content'] | b64decode }}"
-        delegate_to: 127.0.0.1
+      delegate_to: 127.0.0.1
       ignore_errors: yes
       when: not dry_run
 
@@ -273,7 +196,11 @@
       when: module_out.hash_dict['result.status'] == "Failed"
       ignore_errors: yes
 
-- include: goes_service_restartability_with_quagga_configuration_reset.yml
+    - include: ../../playbooks/get_goes_version_and_tags.yml
+      when: not dry_run
+
+
+- include: goes_ping_restartability_with_quagga_configuration_reset.yml
   when:
     - reset_config
     - not dry_run
@@ -285,12 +212,12 @@
     - name: Get the test result from redis db
       get_test_result_from_redis:
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
-        register: result
+      register: result
       when: not dry_run
 
     - name: Print test case result
       debug:
-         msg: "Test case result: {{ result.result_status }}"
+        msg: "Test case result: {{ result.result_status }}"
       when: not dry_run
 
     - name: Print failure summary
@@ -302,4 +229,3 @@
         path: "{{ regression_summary_report }}"
         line: "{{ hash_name }}: {{ result.result_status }}"
       when: not dry_run
-

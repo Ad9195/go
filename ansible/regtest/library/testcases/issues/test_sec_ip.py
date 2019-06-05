@@ -152,6 +152,7 @@ def verify_fib(module):
     execute_commands(module, cmd)
     cmd = 'ip netns set red 20'
     execute_commands(module, cmd)
+    time.sleep(10)
     cmd = 'ip netns exec red ip add sh'
     execute_commands(module, cmd)
     cmd = 'ip netns exec red ip link set up xeth{}'.format(eth)
@@ -164,6 +165,8 @@ def verify_fib(module):
         failure_summary += 'FIB entry for both the IPs are showing up '
         failure_summary += 'even after moving interface to name space.\n'
 
+    execute_commands(module, cmd)
+    time.sleep(5)
     cmd = 'ip netns del red'
     execute_commands(module, cmd)
 

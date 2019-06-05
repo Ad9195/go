@@ -1,0 +1,19 @@
+ - name: Reboot the invader
+   shell: "redis-cli -h {{ bmc_redis_ip }} hset platina-mk1-bmc psu.powercycle true"
+   when: not dry_run
+
+ - name: waiting for switch to come back after powercycle
+   local_action: wait_for host={{ ansible_ssh_host }} state=started port=22 delay=30 timeout=300 connect_timeout=15
+
+ - include: ../get_goes_status.yml 
+   when: not dry_run
+
+ - name: Verify quagga status
+   command: "service quagga status"
+   register: quagga_status
+   when: not dry_run
+
+ - debug: 
+     msg: "quagga service is in active state"
+   when: "' Active: active ' in quagga_status.stdout"
+

@@ -141,7 +141,7 @@
       when: not dry_run
 
 
-- include: ../playbooks/bgp/bird_bgp_traffic_test_reset.yml
+- include: ../../playbooks/bgp/bird_bgp_traffic_test_reset.yml
   when:
     - reset_config
     - not dry_run

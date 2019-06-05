@@ -1,0 +1,62 @@
+---
+
+# Downgrade BMC 
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+
+# Downgrade BMC
+- include: playbooks/upgrade/bmc_downgrade.yml
+
+# Upgrade BMC
+- include: playbooks/upgrade/bmc_upgrade.yml
+

@@ -3,41 +3,30 @@
 - hosts: leaf:spine
   become: true
   tasks:
-    - name: Restore backup of /etc/frr/zebra.conf
+    - name: Restore backup of /etc/quagga/zebra.conf
       copy:
-        src: "{{ frr_zebra_conf_file_bck }}"
-        dest: "{{ frr_zebra_conf_file }}"
+        src: "{{ quagga_zebra_conf_file_bck }}"
+        dest: "{{ quagga_zebra_conf_file }}"
         remote_src: true
       when: not dry_run
 
     - name: Remove zebra backup file
       file:
-        path: "{{ frr_zebra_conf_file_bck }}"
+        path: "{{ quagga_zebra_conf_file_bck }}"
         state: absent
       when: not dry_run
-
-    - name: Restore backup of /etc/frr/bgpd.conf
+      
+    - name: Restore backup of /etc/quagga/bgpd.conf
       copy:
-        src: "{{ frr_bgp_conf_file_bck }}"
-        dest: "{{ frr_bgp_conf_file }}"
+        src: "{{ quagga_bgp_conf_file_bck }}"
+        dest: "{{ quagga_bgp_conf_file }}"
         remote_src: true
       when: not dry_run
 
-    - name: Remove backup file
+    - name: Remove bgp backup file
       file:
-        path: "{{ frr_bgp_conf_file_bck }}"
+        path: "{{ quagga_bgp_conf_file_bck }}"
         state: absent
-      when: not dry_run
-
-    - name: Delete static routes
-      add_delete_static_routes:
-        switch_name: "{{ inventory_hostname }}"
-        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/static_routes.conf') }}"
-        delete: True
-      when: not dry_run
-
-    - name: Delete dummy interface
-      command: "ip link del dummy0 type dummy"
       when: not dry_run
 
     - name: Execute commands
@@ -59,9 +48,8 @@
       until: result.rc == 0
       when: not dry_run
 
-    - name: Restart frr
+    - name: Restart quagga
       service:
-        name: frr
+        name: quagga
         state: restarted
       when: not dry_run
-

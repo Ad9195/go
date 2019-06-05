@@ -1,0 +1,184 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - shell: dpkg --list | grep kernel
+      register: kernel_version
+      when: not dry_run
+
+    - debug:
+        var: kernel_version.stdout_lines
+      when: not dry_run
+
+
+- hosts: server_emulator
+  become: true
+
+  tasks:
+    - command: "date +%Y%m%d%T"
+      register: start_time
+
+    - set_fact:
+        hash_name: "goes_status_after_multiple_powercycle_with_quagga_configruation.yml_{{ start_time.stdout }}"
+        start_time: "{{ start_time.stdout }}"
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - name: Take backup of /etc/quagga/zebra.conf
+      command: "mv {{ quagga_zebra_conf_file }} {{ quagga_zebra_conf_file_bck }}"
+      when: not dry_run
+
+    - name: Copying config to /etc/quagga/zebra.conf
+      copy:
+        src: "../../files/{{inventory_hostname}}/quagga_zebra.conf"
+        dest: "{{ quagga_zebra_conf_file }}"
+      when: not dry_run
+
+    - name: Take backup of /etc/quagga/bgpd.conf
+      copy:
+        src: "{{ quagga_bgp_conf_file }}"
+        dest: "{{ quagga_bgp_conf_file_bck }}"
+        remote_src: true
+      when: not dry_run
+  
+    - name: Add bgp config in /etc/quagga/bgpd.conf
+      blockinfile:
+        path: "{{ quagga_bgp_conf_file }}"
+        marker: ""
+        block: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp.conf') }}"
+      when: not dry_run
+
+    - name: Restart quagga
+      service:
+        name: quagga
+        state: restarted
+      when: not dry_run
+
+    - file:
+        path: "{{ system_restartability_log_dir }}"
+        state: directory
+      when: not dry_run
+
+    - name: Wait for few seconds for bgp to establish connection
+      pause:
+        seconds: 35
+      when: not dry_run
+
+    - name: Verify frr bgp neighborship and ping
+      test_bgp_peering_loopback:
+        switch_name: "{{ inventory_hostname }}"
+        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp.conf') }}"
+        package_name: "frr"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ system_restartability_log_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - name: Verify frr bgp neighborship and ping
+      test_bgp_peering_loopback:
+        switch_name: "{{ inventory_hostname }}"
+        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp.conf') }}"
+        package_name: "frr"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ system_restartability_log_dir }}"
+        dry_run_mode: "{{ dry_run }}"
+      register: dry_run_out
+      delegate_to: 127.0.0.1
+      when: dry_run
+
+    - include_tasks: powercycle_multiple_test_with_quagga_configruation.yml 
+      with_sequence: count=10
+      when: not dry_run
+
+    - name: Verify frr bgp neighborship and ping
+      test_bgp_peering_loopback:
+        switch_name: "{{ inventory_hostname }}"
+        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp.conf') }}"
+        spine_list: "{{ groups['spine'] }}"
+        leaf_list: "{{ groups['leaf'] }}"
+        package_name: "frr"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ system_restartability_log_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - name: Verify frr bgp neighborship and ping
+      test_bgp_peering_loopback:
+        switch_name: "{{ inventory_hostname }}"
+        config_file: "{{ lookup('file', '../../files/{{inventory_hostname}}/bgp_peering_ebgp.conf') }}"
+        spine_list: "{{ groups['spine'] }}"
+        leaf_list: "{{ groups['leaf'] }}"
+        package_name: "frr"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ system_restartability_log_dir }}"
+        dry_run_mode: "{{ dry_run }}"
+      register: dry_run_out
+      delegate_to: 127.0.0.1
+      when: dry_run
+
+    - command: "date +%Y%m%d%T"
+      register: end_time
+      when: not dry_run
+      
+    - name: Fetch the log file
+      slurp:
+        src: "{{ module_out.log_file_path }}"
+      register: logs
+      when: not dry_run
+
+    - name: Store the test result in a hash in redis db on server emulator
+      store_result_in_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        start_time: "{{ hostvars['server_emulator']['start_time'] }}"
+        end_time: "{{ end_time.stdout }}"
+        hash_dict: "{{ module_out.hash_dict }}"
+        log_content: "{{ logs['content'] | b64decode }}"
+      delegate_to: 127.0.0.1
+      when: not dry_run
+
+    - copy:
+        src: "../../files/show_tech.py"
+        dest: /tmp/show_tech.py
+        mode: 0755
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - command: "/tmp/./show_tech.py --path /var/log/show_tech/ --hash_name {{ hostvars['server_emulator']['hash_name'] }}"
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - file:
+        path: /tmp/show_tech.py
+        state: absent
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+- include: goes_status_after_multiple_powercycle_with_quagga_configruation_reset.yml
+  when:
+    - reset_config
+    - not dry_run
+      
+      
+- hosts: server_emulator
+  become: true
+  tasks:
+    - name: Get the test result from redis db
+      get_test_result_from_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+      register: result
+
+    - debug:
+        msg: "Test case result: {{ result.result_status }}"
+      when: not dry_run
+
+    - debug:
+        msg: "Failure summary: {{ result.result_detail }}"
+      when: not dry_run
+
+    - lineinfile:
+        path: "{{ regression_summary_report }}"
+        line: "{{ hash_name }}: {{ result.result_status }}"
+      when: not dry_run

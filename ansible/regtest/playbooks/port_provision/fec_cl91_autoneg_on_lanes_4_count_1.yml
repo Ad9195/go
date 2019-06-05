@@ -65,6 +65,7 @@
         media: "copper"
         fec: "cl91"
         autoneg: "on"
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"

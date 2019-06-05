@@ -264,13 +264,26 @@ def verify_port_links(module):
                 failure_summary += 'autoneg is not set to {} for '.format(autoneg)
                 failure_summary += 'the interface xeth{}\n'.format(eth)
 
-        afec = "cl91"
         amedia = "fiber"
         f_ports = module.params['f_ports']
         for ele in f_ports: 
 		if ele%2 == 0:
 			continue
 		else:
+			cmd = "goes hget platina-mk1 qsfp.compliance"
+			out = execute_commands(module, cmd).splitlines()
+                	for line in out:
+                    		if ("xeth{}".format(ele) in line and "100GBASE-LR4" in line):
+                        		afec = "none"
+                        		break
+                    		elif ("xeth{}".format(ele) in line and "100G CWDM4" in line):
+                        		afec = "none"
+                        		break
+                    		elif ("xeth{}".format(ele) in line and "100GBASE-SR4" in line):
+                        		afec = "cl91"
+                        		break
+                    		else:
+                       			continue
                         cmd1 = 'goes hget {} vnet.xeth{}.fec'.format(platina_redis_channel, ele)
                         cmd2 = 'goes hget {} vnet.xeth{}.media'.format(platina_redis_channel, ele)
                         cmd3 = 'goes hget {} vnet.xeth{}.link'.format(platina_redis_channel, ele)
@@ -352,13 +365,26 @@ def verify_port_links(module):
                     failure_summary += 'autoneg is not set to {} for '.format(autoneg)
                     failure_summary += 'the interface xeth{}-{}\n'.format(eth, port)
         
-	afec = "cl91"
         amedia = "fiber"
 	f_ports = module.params['f_ports']
         for ele in f_ports:
 		if ele % 2 == 0:
 			continue
 		else:
+			cmd = "goes hget platina-mk1 qsfp.compliance"
+                        out = execute_commands(module, cmd).splitlines()
+                        for line in out:
+                                if ("xeth{}".format(ele) in line and "100GBASE-LR4" in line):
+                                        afec = "none"
+                                        break
+                                elif ("xeth{}".format(ele) in line and "100G CWDM4" in line):
+                                        afec = "none"
+                                        break
+                                elif ("xeth{}".format(ele) in line and "100GBASE-SR4" in line):
+                                        afec = "cl91"
+                                        break
+                                else:
+                                        continue
 		       	cmd1 = 'goes hget {} vnet.xeth{}.fec'.format(platina_redis_channel, ele)
 			cmd2 = 'goes hget {} vnet.xeth{}.media'.format(platina_redis_channel, ele)
 			cmd3 = 'goes hget {} vnet.xeth{}.link'.format(platina_redis_channel, ele)
@@ -367,7 +393,7 @@ def verify_port_links(module):
 			out3 = run_cli(module, cmd3)
 			if afec not in out1:
                     		RESULT_STATUS = False
-	                    	failure_summary += 'On switch {} '.format(switch_name)
+	                	failure_summary += 'On switch {} '.format(switch_name)
                     		failure_summary += 'fec of the interface {} '.format(ele)
                     		failure_summary += 'is not set to {}'.format(afec)
 			if amedia not in out2:

@@ -44,6 +44,18 @@ options:
         - BGP configurations added in bgpd.conf file.
       required: False
       type: str
+    spine_list:
+      description:
+        - List of all spine switches.
+      required: False
+      type: list
+      default: []
+    leaf_list:
+      description:
+        - List of all leaf switches.
+      required: False
+      type: list
+      default: []
     package_name:
       description:
         - Name of the package installed (e.g. quagga/frr/bird).
@@ -65,6 +77,8 @@ EXAMPLES = """
 - name: Verify bgp peering loopback
   test_bgp_peering_loopback:
     switch_name: "{{ inventory_hostname }}"
+    spine_list: "{{ groups['spine'] }}"
+    leaf_list: "{{ groups['leaf'] }}"
     hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
     log_dir_path: "{{ log_dir_path }}"
 """
@@ -163,6 +177,44 @@ def verify_bgp_loopback(module):
     alist.append(failure_summary)
     return alist
 
+def verify_ping(module):
+    switch_name = module.params['switch_name']
+
+    is_ping = module.params['is_ping']
+    leaf_list1 = module.params['leaf_list'][:]
+    spine_list1 = module.params['spine_list'][:]
+    global RESULT_STATUS, HASH_DICT
+    failure_summary = ''
+    RESULT_STATUS1 = True
+    if is_ping:
+        packet_count = 5
+        if switch_name in leaf_list1:
+                p_list = leaf_list1
+        elif switch_name in spine_list1:
+                p_list = spine_list1
+
+        p_list.remove(switch_name)
+        cmd = "ping -c {} -I 192.168.{}.1 192.168.{}.1".format(packet_count, switch_name[-2:], p_list[0][-2:])
+
+        ping_out = execute_commands(module, cmd)
+
+        if '100% packet loss' in ping_out:
+            RESULT_STATUS1 = False
+            failure_summary += 'Ping from switch {} to {}'.format(switch_name, p_list[0])
+            failure_summary += ' for {} packets'.format(packet_count)
+            failure_summary += ' are not received in the output of '
+            failure_summary += 'command {}\n'.format(cmd)
+	elif 'Cannot assign requested address' in ping_out:
+	    RESULT_STATUS1 = False
+            failure_summary += 'Ping from switch {} to {}'.format(switch_name, p_list[0])
+            failure_summary += ' for {} packets'.format(packet_count)
+            failure_summary += ' are not received in the output of '
+            failure_summary += 'command {}\n'.format(cmd)
+
+    alist = [True if RESULT_STATUS1 else False]
+    alist.append(failure_summary)
+    return alist
+
 def verify_bgp_peering_loopback(module):
     """
     Method to verify bgp peering loopback config.
@@ -191,16 +243,29 @@ def verify_bgp_peering_loopback(module):
 
     # Get all bgp routes
     retry = retries - 1
-    while(retry):
-        if verify_bgp_loopback(module)[0]:
-            break
-        time.sleep(delay)
-        retry -= 1
+    found_list = [False, False]
+    while (retry):
+        if not found_list[0]:
+            if verify_bgp_loopback(module)[0]:
+                found_list[0] = True
 
-    HASH_DICT['result.detail'] = verify_bgp_loopback(module)[1]
+        if not found_list[1]:
+            if verify_ping(module)[0]:
+                found_list[1] = True
+
+        if all(found_list):
+            break
+        else:
+            time.sleep(delay)
+            retry -= 1
+
+    # Store the failure summary in hash
+    RESULT_STATUS, HASH_DICT['result.detail'] = all([verify_bgp_loopback(module)[0], verify_ping(module)[0]]), \
+                                                verify_bgp_loopback(module)[1] + verify_ping(module)[1]
 
     # Get the GOES status info
     execute_commands(module, 'goes status')
+
 
 
 def main():
@@ -209,6 +274,9 @@ def main():
         argument_spec=dict(
             switch_name=dict(required=False, type='str'),
             config_file=dict(required=False, type='str', default=''),
+            spine_list=dict(required=False, type='list', default=[]),
+            leaf_list=dict(required=False, type='list', default=[]),
+            is_ping=dict(required=False, type='bool', deafult=False),
             package_name=dict(required=False, type='str'),
             hash_name=dict(required=False, type='str'),
             log_dir_path=dict(required=False, type='str'),
@@ -256,7 +324,7 @@ def main():
         # Create a log file
         log_file_path = module.params['log_dir_path']
         log_file_path += '/{}.log'.format(module.params['hash_name'])
-        log_file = open(log_file_path, 'w')
+        log_file = open(log_file_path, 'a')
         for key, value in HASH_DICT.iteritems():
             log_file.write(key)
             log_file.write('\n')
@@ -274,4 +342,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

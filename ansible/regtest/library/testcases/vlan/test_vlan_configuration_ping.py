@@ -227,7 +227,7 @@ def verify_vlan_configurations(module):
             # Initiate tcpdump on target switch
             if not arping:
                 for eth in eth_list:
-                    cmd = "timeout 10 tcpdump -c 5 -net -i xeth{} icmp".format(eth)
+                    cmd = "timeout 30 tcpdump -c 5 -net -i xeth{} icmp".format(eth)
                     tcpdump_out = execute_commands(module, cmd)
 
                     if tcpdump_out:
@@ -243,7 +243,7 @@ def verify_vlan_configurations(module):
                         failure_summary += 'failed to capture tcpdump output for tagged packets\n'
 
             else:
-                cmd = "timeout 10 tcpdump -c 5 -net -i xeth{} arp".format(eth_list[switch_list.index(switch_name)])
+                cmd = "timeout 30 tcpdump -c 5 -net -i xeth{} arp".format(eth_list[switch_list.index(switch_name)])
                 tcpdump_out = execute_commands(module, cmd)
 
                 if tcpdump_out:
@@ -262,7 +262,7 @@ def verify_vlan_configurations(module):
 
         else:
             for eth in eth_list:
-                cmd = "timeout 20 tcpdump -net -i xeth{} not proto ospf and  not arp -vvv".format(eth)
+                cmd = "timeout 30 tcpdump -net -i xeth{} not proto ospf and  not arp -vvv".format(eth)
                 tcpdump_out = execute_commands(module, cmd)
 
                 if tcpdump_out:

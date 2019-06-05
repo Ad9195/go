@@ -37,7 +37,8 @@
         path: "/tmp/bmc_upgrade_{{ inventory_hostname }}.sh"
         state: absent
       delegate_to: 127.0.0.1
-      
+ 
+     
     - debug:
         msg: "BMC latest version already installed"
       when: upgrade.stdout.find('not newer') != -1

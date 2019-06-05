@@ -95,6 +95,10 @@ goes_coreboot_installer_url: '{{ goes_url_path }}{{ goes_coreboot_installer_name
 frr_installer_name: 'frr_3.0.3-1_debian8.1_amd64.deb'
 frr_link: 'https://github.com/FRRouting/frr/releases/download/frr-3.0.3/{{ frr_installer_name }}'
 
+quagga_installer_name: 'quagga_0.99.23.1-1+deb8u5_amd64.deb'
+quagga_link: 'http://security-cdn.debian.org/debian-security/pool/updates/main/q/quagga/{{ quagga_installer_name }}'
+
+
 gobgp_installer_name: 'gobgp_2.0.0_linux_amd64.tar.gz'
 gobgp_link: 'https://github.com/osrg/gobgp/releases/download/v2.0.0/{{ gobgp_installer_name }}'
 gobgp_dir: /etc/gobgp
@@ -102,9 +106,9 @@ gobgp_dir: /etc/gobgp
 docker_compose_file: ~/docker-compose.yml
 
 #Command to downgrade BMC to v0.4 version (testing purpose)
-downgrade_cmd: 'upgrade -v TEST1 -s 172.17.2.28/downloads/ -f'
+downgrade_cmd: 'upgrade -v v1.2.0-rc0 -s 172.17.2.28/downloads -f'
 
 #Command to upgrade BMC to latest version
 #upgrade_cmd: 'upgrade -v master -s downloads.platinasystems.com/TEST -f'
-upgrade_cmd: 'upgrade -v v1.2.0-rc0 -s 172.17.2.28/downloads'
+upgrade_cmd: 'upgrade -v kph -s 172.17.2.28/downloads'
 

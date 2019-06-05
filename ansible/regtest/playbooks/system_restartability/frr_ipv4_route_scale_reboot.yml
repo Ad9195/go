@@ -1,0 +1,50 @@
+ - name: Reboot the invader
+   reboot:
+   when: not dry_run
+
+ - name: waiting for switch to come back after powercycle
+   local_action: wait_for host={{ ansible_ssh_host }} state=started port=22 delay=30 timeout=300 connect_timeout=15
+
+ - name: check goes status
+   command: goes status
+   register: goes
+   ignore_errors: no
+   retries: "{{ goes_retry }}"
+   delay: "{{ goes_delay }}"
+   until: goes.rc == 0 
+
+ - name: Print goes status
+   debug:
+     var: goes.stdout
+   ignore_errors: no
+
+ - name: Get all linux routes
+   shell: "ip route show > /var/log/linux_routes.txt"
+   when: not dry_run
+
+ - name: Get all frr routes
+   shell: "vtysh -c 'show ip route' > /var/log/frr_routes.txt"
+   when: not dry_run
+
+ - name: Get all arp entries
+   shell: "arp -an > /var/log/arp_entries.txt"
+   when: not dry_run
+
+ - name: Verify frr ipv4 16k routes scale
+   test_ipv4_16k_routes_scale_updated:
+     switch_name: "{{ inventory_hostname }}"
+     spine_list: "{{ groups['spine'] }}"
+     leaf_list: "{{ groups['leaf'] }}"
+     package_name: 'frr'
+     hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+     log_dir_path: "{{ ipv4_log_dir }}"
+   register: module_out
+   when: not dry_run
+
+ - file:
+     path: "{{ item }}"
+     state: absent
+   with_items:
+   - /var/log/linux_routes.txt
+   - /var/log/frr_routes.txt
+   - /var/log/arp_entries.txt

@@ -23,7 +23,7 @@
         start_time: "{{ start_time.stdout }}"
 
 
-- hosts: spine[0]
+- hosts: leaf:spine
   become: true
   tasks:
     - file:

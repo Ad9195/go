@@ -125,7 +125,7 @@
       register: module_out
 
     - set_fact:
-      dry_run_cmds: "{{ dry_run_out.cmds }}"
+        dry_run_cmds: "{{ dry_run_out.cmds }}"
       when: dry_run
 
     - command: "date +%Y%m%d%T"

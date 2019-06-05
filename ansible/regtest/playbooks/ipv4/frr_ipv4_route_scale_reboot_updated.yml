@@ -1,0 +1,182 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - shell: dpkg --list | grep kernel
+      register: kernel_version
+      when: not dry_run
+
+    - debug:
+        var: kernel_version.stdout_lines
+      when: not dry_run
+
+
+- hosts: server_emulator
+  become: true
+
+  tasks:
+    - command: "date +%Y%m%d%T"
+      register: start_time
+
+    - set_fact:
+        hash_name: "frr_ipv4_route_scale_updated_{{ start_time.stdout }}"
+        start_time: "{{ start_time.stdout }}"
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - name: Take backup of /etc/network/interfaces
+      copy:
+        src: "{{ network_interfaces_file }}"
+        dest: "{{ network_interfaces_file_bck }}"
+        remote_src: true
+      when: not dry_run
+
+    - name: Copy static 16k routes network interfaces file
+      copy:
+        src: "../../files/{{inventory_hostname}}/static_16k_routes"
+        dest: "{{ network_interfaces_file }}"
+      when: not dry_run
+
+    - name: Restart networking service and goes
+      command: "{{ item }}"
+      with_items:
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
+      - 'goes restart'
+      when: not dry_run
+
+    - name: Wait few seconds for GOES to come up
+      pause:
+        seconds: 40
+      when: not dry_run
+
+    - name: Get goes status
+      command: goes status
+      register: goes
+      register: goes
+      ignore_errors: yes
+      retries: "{{ goes_retry }}"
+      delay: "{{ goes_delay }}"
+      until: goes.rc == 0 
+
+    - name: Print goes status
+      debug:
+        var: goes.stdout
+      ignore_errors: yes
+
+    - file:
+        path: "{{ ipv4_log_dir }}"
+        state: directory
+      when: not dry_run
+
+    - name: Get all linux routes
+      shell: "ip route show > /var/log/linux_routes.txt"
+      when: not dry_run
+
+    - name: Get all frr routes
+      shell: "vtysh -c 'show ip route' > /var/log/frr_routes.txt"
+      when: not dry_run
+
+    - name: Get all arp entries 
+      shell: "arp -an > /var/log/arp_entries.txt"
+      when: not dry_run
+
+    - name: Verify frr ipv4 16k routes scale
+      test_ipv4_routes_scale_updated: 
+        switch_name: "{{ inventory_hostname }}"
+        spine_list: "{{ groups['spine'] }}"
+        leaf_list: "{{ groups['leaf'] }}"
+        package_name: 'frr'
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ ipv4_log_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - include_tasks: frr_ipv4_route_scale_reboot.yml 
+      with_sequence: count=10
+
+    - name: Verify frr ipv4 16k routes scale
+      test_ipv4_routes_scale_updated:
+        switch_name: "{{ inventory_hostname }}"
+        spine_list: "{{ groups['spine'] }}"
+        leaf_list: "{{ groups['leaf'] }}"
+        package_name: 'frr'
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ ipv4_log_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - command: "date +%Y%m%d%T"
+      register: end_time
+      when: not dry_run
+
+    - name: Fetch the log file
+      slurp:
+        src: "{{ module_out.log_file_path }}"
+      register: logs
+      when: not dry_run
+
+    - name: Store the test result in a hash in redis db on server emulator
+      store_result_in_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        start_time: "{{ hostvars['server_emulator']['start_time'] }}"
+        end_time: "{{ end_time.stdout }}"
+        hash_dict: "{{ module_out.hash_dict }}"
+        log_content: "{{ logs['content'] | b64decode }}"
+        delegate_to: 127.0.0.1
+      ignore_errors: yes
+      when: not dry_run
+
+    - copy:
+        src: "../../files/show_tech.py"
+        dest: /tmp/show_tech.py
+        mode: 0755
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - command: "/tmp/./show_tech.py --path /var/log/show_tech/ --hash_name {{ hostvars['server_emulator']['hash_name'] }}"
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - file:
+        path: /tmp/show_tech.py
+        state: absent
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+
+- include: frr_ipv4_route_scale_updated_reset.yml
+  when:
+  - reset_config
+  - not dry_run
+
+
+- hosts: server_emulator
+  become: true
+  tasks:
+    - name: Get the test result from redis db
+      get_test_result_from_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+      register: result
+      when: not dry_run
+
+    - name: Print test case result
+      debug:
+        msg: "Test case result: {{ result.result_status }}"
+      when: not dry_run
+
+    - name: Print failure summary
+      debug:
+        msg: "Failure summary: {{ result.result_detail }}"
+      when: not dry_run
+
+    - lineinfile:
+        path: "{{ regression_summary_report }}"
+        line: "{{ hash_name }}: {{ result.result_status }}"
+      when: not dry_run
+
+
+

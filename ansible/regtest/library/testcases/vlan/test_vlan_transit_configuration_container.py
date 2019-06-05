@@ -175,7 +175,9 @@ def verify_vlan_configurations(module):
     if module.params['config_file']:
         config_file = module.params['config_file'].splitlines()
     eth_ping_switch = []
-
+    eth_list0 = [1,21]
+    eth_list1 = [1,19]
+    eth_list2 = [3,21]
     is_ping_switch = True if switch_name == ping_switch else False
 
     if is_ping_switch:
@@ -196,14 +198,28 @@ def verify_vlan_configurations(module):
 
         else:
             # Initiate tcpdump on target switch
-            if switch_name in leaf_list:
+            if switch_name == leaf_list[1]:
                 for eth in eth_list:
-                    cmd = "timeout 70 tcpdump -c 5 -net -i xeth{} icmp".format(eth)
+                    cmd = "goes vnet show ha xeth{}".format(eth)
                     tcpdump_out = execute_commands(module, cmd)
-
                     if tcpdump_out:
-                        if ('802.1Q (0x8100)' not in tcpdump_out or 'echo request' not in tcpdump_out or
-                                'echo reply' not in tcpdump_out):
+                        if 'port rx 1tag vlan packets' not in tcpdump_out or 'port tx 1tag vlan packets' not in tcpdump_out:
+                            RESULT_STATUS = False
+                            failure_summary += 'On switch {} '.format(switch_name)
+                            failure_summary += 'there are no vlan tagged packets '
+                            failure_summary += 'captured in tcpdump for xeth{}\n'.format(eth)
+                    else:
+                        RESULT_STATUS = False
+                        failure_summary += 'On switch {} '.format(switch_name)
+                        failure_summary += 'failed to capture vlan packets for tagged packets\n'
+
+
+            elif switch_name == spine_list[0]:
+                for eth in eth_list1:
+                    cmd = "goes vnet show ha xeth{}".format(eth)
+                    tcpdump_out = execute_commands(module, cmd)
+                    if tcpdump_out:
+                        if 'port rx 1tag vlan packets' not in tcpdump_out or 'port tx 1tag vlan packets' not in tcpdump_out:
                             RESULT_STATUS = False
                             failure_summary += 'On switch {} '.format(switch_name)
                             failure_summary += 'there are no vlan tagged packets '
@@ -213,20 +229,21 @@ def verify_vlan_configurations(module):
                         failure_summary += 'On switch {} '.format(switch_name)
                         failure_summary += 'failed to capture tcpdump output for tagged packets\n'
 
-            else:
-                cmd = "timeout 150 tcpdump -c 1 -net -i xeth{} icmp".format(eth_list[spine_list.index(switch_name)])
-                tcpdump_out = execute_commands(module, cmd)
-
-                if tcpdump_out:
-                    if '802.1Q (0x8100)' not in tcpdump_out:
+            elif switch_name == spine_list[1]:
+                for eth in eth_list2:
+                    cmd = "goes vnet show ha xeth{}".format(eth)
+                    tcpdump_out = execute_commands(module, cmd)
+                    if tcpdump_out:
+                        if 'port rx 1tag vlan packets' not in tcpdump_out or 'port tx 1tag vlan packets' not in tcpdump_out:
+                            RESULT_STATUS = False
+                            failure_summary += 'On switch {} '.format(switch_name)
+                            failure_summary += 'there are no vlan tagged packets '
+                            failure_summary += 'captured in tcpdump for xeth{}\n'.format(eth)
+                    else:
                         RESULT_STATUS = False
                         failure_summary += 'On switch {} '.format(switch_name)
-                        failure_summary += 'there are no vlan tagged packets '
-                        failure_summary += 'captured in tcpdump for xeth{}\n'.format(eth_list[spine_list.index(switch_name)])
-                else:
-                    RESULT_STATUS = False
-                    failure_summary += 'On switch {} '.format(switch_name)
-                    failure_summary += 'failed to capture tcpdump output for tagged packets\n'
+                        failure_summary += 'failed to capture tcpdump output for tagged packets\n'
+
 
     else:
         if is_ping_switch:

@@ -1,5 +1,9 @@
 ---
 
+#- include: ../../playbooks/installation/uninstall_packages.yml
+
+#- include: ../../playbooks/installation/quagga_install.yml
+
 - hosts: leaf:spine
   become: true
   ignore_errors: yes

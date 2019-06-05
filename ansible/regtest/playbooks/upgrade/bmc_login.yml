@@ -1,0 +1,61 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - shell: dpkg --list | grep kernel
+      register: kernel_version
+
+    - debug:
+        var: kernel_version.stdout_lines
+
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - name: Copy bmc_login script
+      template:
+        src: ../../templates/bmc_login.sh
+        dest: "/tmp/bmc_login_{{ inventory_hostname }}.sh"
+        mode: 0755
+      delegate_to: 127.0.0.1
+
+    - name: Run bmc_login script
+      shell: "./bmc_login_{{ inventory_hostname }}.sh"
+      args:
+        chdir: /tmp/
+      delay: 10
+      with_sequence: start=0 end=100
+      delegate_to: 127.0.0.1
+
+    - name: Remove bmc_login script
+      file:
+        path: "/tmp/bmc_login_{{ inventory_hostname }}.sh"
+        state: absent
+      delegate_to: 127.0.0.1
+      
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - include: ../../playbooks/get_goes_status.yml
+
+    - name: Verify link status b/w invaders
+      verify_links:
+        switch_name: "{{ inventory_hostname }}"
+        leaf_list: "{{ groups['leaf'] }}"
+        eth_list: "1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31"
+        platina_redis_channel: "{{ platina_redis_channel }}"
+      register: module_out
+
+    - name: Print Link Status
+      debug:
+        var: module_out
+
+    - lineinfile:
+        path: "{{ regression_summary_report }}"
+        line: "Links Status {{ inventory_hostname }}: {{ module_out.msg }}"
+      delegate_to: 127.0.0.1
+

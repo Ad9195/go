@@ -25,7 +25,7 @@
         start_time: "{{ start_time.stdout }}"
 
 
-- hosts: leaf[0]:spine[0]
+- hosts: leaf:spine
   become: true
 
   tasks:
@@ -40,16 +40,16 @@
         dest: "{{ network_interfaces_file }}"
       when: not dry_run
 
-    - name: Update interfaces file for fiber ports
-      test_fiber_ports:
-        cmd : "1,1,4,1,4,1,2,1,4,1,4,1,4,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
-      register: fmodule_out
-
     - name: Copy goesd-platina-mk1-modules.conf file
       template:
         src: "../../files/goesd-platina-mk1-modprobe.conf_100g_10g_25g_50g"
         dest: "{{ goesd_modprobe_file }}"
       when: not dry_run
+
+    - name: Update interfaces file for fiber ports
+      test_fiber_ports:
+        cmd : "1,1,4,1,4,1,2,1,4,1,4,1,4,1,2,1,1,1,4,1,4,1,2,1,4,1,4,1,4,1,2,1"
+      register: fmodule_out
 
     - name: Restart goes
       command: "{{ item }}"
@@ -74,7 +74,7 @@
     - name: Wait few seconds for GOES to come up
       pause:
         seconds: 10
-      when: not dry_run   
+      when: not dry_run
 
     - name: Goes status
       command: goes status
@@ -90,7 +90,7 @@
         speed: "100g,10g,20g,25g,50g,1g"
         f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         media: "copper"
-        fec: "cl91"
+        fec: "cl74"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
@@ -102,7 +102,7 @@
         switch_name: "{{ inventory_hostname }}"
         speed: "100g,10g,20g,25g,50g,1g"
         media: "copper"
-        fec: "cl91"
+        fec: "cl74"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
@@ -172,7 +172,7 @@
       verify_iperf_traffic_multi:
         switch_name: "{{ inventory_hostname }}"
         eth_ips_last_octet: "31,32"
-        speed: "100g,10g,25g,50g"
+        speed: "100g,10g,20g,25g,50g,1g"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
       register: module_out
@@ -182,7 +182,7 @@
       verify_iperf_traffic_multi:
         switch_name: "{{ inventory_hostname }}"
         eth_ips_last_octet: "31,32"
-        speed: "100g,10g,25g,50g"
+        speed: "100g,10g,20g,25g,50g,1g"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
         dry_run_mode: "{{ dry_run }}"

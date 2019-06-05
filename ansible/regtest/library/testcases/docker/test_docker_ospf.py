@@ -164,7 +164,7 @@ def verify_ospf_neighbors(module):
                     failure_summary += 'On switch {} '.format(switch_name)
                     failure_summary += 'ospf route {} is not showing up '.format(route)
                     failure_summary += 'in the output of command {}\n'.format(cmd)
-        if ospf_routes.count('O>*') < 3:
+        if ospf_routes.count('O>*') < 2:
             RESULT_STATUS = False
             failure_summary += 'On switch {} '.format(switch_name)
             failure_summary += 'dummy routes are not showing up '.format(route)
@@ -190,6 +190,7 @@ def verify_ospf_neighbors(module):
         failure_summary += 'output of command {} is None\n'.format(cmd)
 
     # Get ospf neighbors relationships
+    time.sleep(10)
     cmd = get_cli(module) + "vtysh -c 'show ip ospf neighbor'"
     out = execute_commands(module, cmd)
 

@@ -63,7 +63,7 @@
       when: not dry_run
 
     - name: Verify quagga bgp state propagation
-      test_bgp_state_propagation:
+      test_state_propagation:
         switch_name: "{{ inventory_hostname }}"
         propagate_switch: "{{ groups['leaf'][0] }}"
         eth_list: "3,19"
@@ -74,7 +74,7 @@
       when: not dry_run
 
     - name: Verify quagga bgp state propagation
-      test_bgp_state_propagation:
+      test_state_propagation:
         switch_name: "{{ inventory_hostname }}"
         propagate_switch: "{{ groups['leaf'][0] }}"
         eth_list: "3,19"

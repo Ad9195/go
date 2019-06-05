@@ -13,7 +13,7 @@ allow-hotplug eth0
 
 auto eth0
 iface eth0 inet static
-  address 172.17.2.45
+  address 172.17.2.29
   netmask 255.255.254.0
   gateway 172.17.2.1
   dns-nameservers 8.8.8.8 8.8.4.4
@@ -24,7 +24,7 @@ iface xeth1 inet static
     netmask 255.255.255.0
 pre-up ip link set $IFACE up
 pre-up ethtool -s $IFACE speed 100000 autoneg off
-pre-up ethtool --set-priv-flags $IFACE copper off
+pre-up ethtool --set-priv-flags $IFACE copper on
 pre-up ethtool --set-priv-flags $IFACE fec74 off
 pre-up ethtool --set-priv-flags $IFACE fec91 on
 post-down ip link set $IFACE down
@@ -414,29 +414,17 @@ pre-up ethtool --set-priv-flags $IFACE fec91 on
 post-down ip link set $IFACE down
 allow-vnet xeth16
 
-auto xeth17-1
-iface xeth17-1 inet static
-    address 10.17.1.29
+auto xeth17
+iface xeth17 inet static
+    address 10.0.17.29
     netmask 255.255.255.0
 pre-up ip link set $IFACE up
 pre-up ethtool -s $IFACE speed 100000 autoneg off
-pre-up ethtool --set-priv-flags $IFACE copper off
+pre-up ethtool --set-priv-flags $IFACE copper on
 pre-up ethtool --set-priv-flags $IFACE fec74 off
 pre-up ethtool --set-priv-flags $IFACE fec91 on
 post-down ip link set $IFACE down
-allow-vnet xeth17-1
-
-auto xeth17-2
-iface xeth17-2 inet static
-    address 10.17.2.29
-    netmask 255.255.255.0
-pre-up ip link set $IFACE up
-pre-up ethtool -s $IFACE speed 100000 autoneg off
-pre-up ethtool --set-priv-flags $IFACE copper off
-pre-up ethtool --set-priv-flags $IFACE fec74 off
-pre-up ethtool --set-priv-flags $IFACE fec91 on
-post-down ip link set $IFACE down
-allow-vnet xeth17-2
+allow-vnet xeth17
 
 auto xeth18
 iface xeth18 inet static

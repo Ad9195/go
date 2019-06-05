@@ -40,14 +40,34 @@
         src: "../../files/goesd-platina-mk1-modprobe.conf"
         dest: "{{ goesd_modprobe_file }}"
 
+    - name: Update interfaces file for fiber ports
+      test_fiber_ports:
+        cmd : "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
+      register: fmodule_out
+
+    - name: Wait few seconds for GOES to come up
+      pause:
+        seconds: 10
+      when: not dry_run
+
     - name: Execute commands
       command: "{{ item }}"
       with_items:
       - 'rmmod platina-mk1'
-      - 'modprobe platina-mk1 provision=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1'
+      - "modprobe platina-mk1 provision={{ fmodule_out.hash_dict['command'] }}"
       - 'goes restart'
       - 'ifdown -a --allow vnet'
       - 'ifup -a --allow vnet'
+
+    - set_fact:
+        commands: "{{ item }}"
+      with_items:
+      - 'rmmod platina-mk1'
+      - "modprobe platina-mk1 provision={{ fmodule_out.hash_dict['command'] }}"
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
+      - 'goes restart'
+      when: dry_run
 
     - name: Wait few seconds for GOES to come up
       pause:
@@ -60,6 +80,7 @@
         media: "copper"
         fec: "none"
         autoneg: "off"
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
@@ -108,6 +129,7 @@
         media: "copper"
         fec: "cl74"
         autoneg: "off"
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
@@ -163,6 +185,7 @@
         switch_name: "{{ inventory_hostname }}"
         eth_ips_last_octet: "31,32"
         is_subports: False
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
       register: module_out
@@ -214,6 +237,7 @@
         media: "copper"
         fec: "cl74"
         autoneg: "on"
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         platina_redis_channel: "{{ platina_redis_channel }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
@@ -262,6 +286,7 @@
         switch_name: "{{ inventory_hostname }}"
         eth_ips_last_octet: "31,32"
         is_subports: False
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ port_provision_log_dir }}"
       register: module_out

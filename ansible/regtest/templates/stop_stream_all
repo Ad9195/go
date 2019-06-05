@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# This script stop all loop streams by flapping the loop engine ports; faster
+#
+#
+#Example
+# stop_stream -e ce1
+#
+#
+
+
+usage=$"
+    Example:  stop_stream_all
+    "
+
+if [ "$1" == "Help" -o "$1" == "help" ]; then
+    echo "$usage"
+    exit
+fi
+
+/home/platina/bin/bcm.py "cint stoploop.cint"

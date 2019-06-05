@@ -48,27 +48,33 @@
 # Run all docker test cases
 - include: docker_main.yml
 
-# Run all SNMP test cases
-- include: snmp_main.yml
-
 
 # Run  all downgrade and upgrade playbook
 - include: upgrade_main.yml
 
+
 # Run all issues test cases
 - include: issues_main.yml
+
 
 # Run all link flap test cases
 - include: link_flap_main.yml
 
+
 # Run all ntp test cases
 - include: ntp_main.yml
+
 
 # Run all System Restartability Playbook
 - include: system_restartability_main.yml
 
+
 # Run all long Runnig Traffic testcases
 - include: long_running_traffic_main.yml
+
+
+# Run all SNMP test cases
+- include: snmp_main.yml
 
 - hosts: server_emulator
   become: true

@@ -25,6 +25,11 @@
     - name: Uninstall Goes
       shell: goes uninstall
 
+    - file:
+       path: "{{ system_restartability_log_dir }}"
+       state: directory
+      when: not dry_run
+
     - include_tasks: reboot_sda.yml
       with_sequence: count=10
 
@@ -34,11 +39,6 @@
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ system_restartability_log_dir }}"
       register: module_out
-      when: not dry_run
-
-    - file:
-       path: "{{ system_restartability_log_dir }}"
-       state: directory
       when: not dry_run
 
     - command: "date +%Y%m%d%T"

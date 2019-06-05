@@ -1,0 +1,205 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - shell: dpkg --list | grep kernel
+      register: kernel_version
+      when: not dry_run
+
+    - debug:
+        var: kernel_version.stdout_lines
+      when: not dry_run
+
+
+- hosts: server_emulator
+  become: true
+
+  tasks:
+    - command: "date +%Y%m%d%T"
+      register: start_time
+
+    - set_fact:
+        hash_name: "regress_flow_control_with_10g_port_provision_single_interface_2_devices_{{ start_time.stdout }}"
+        start_time: "{{ start_time.stdout }}"
+
+
+- hosts: leaf[0]:spine[0]
+  become: true
+  tasks:
+    - file:
+        path: "{{ flow_control_log_dir }}"
+        state: directory
+      when: not dry_run
+
+    - name: Copy port provisioned interfaces_flow_control_10g_single_interface_two_devices file to /etc/network/interfaces
+      template:
+        src: "../../files/{{ inventory_hostname }}/interfaces_flow_control_10g_single_interface_two_devices"
+        dest: "{{ network_interfaces_file }}"
+      when: not dry_run
+
+    - name: Copy goesd-platina-mk1-modprobe.conf file
+      template:
+        src: "../../files/{{ inventory_hostname }}/goesd-platina-mk1-modprobe.conf_flow_control_10g_single_interface_two_devices"
+        dest: "{{ goesd_modprobe_file }}"
+      when: not dry_run
+   
+    - name: Update interfaces file for fiber ports
+      test_fiber_ports:
+        cmd : "1,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
+      register: fmodule_out
+      when: not dry_run
+
+    - name: Restart goes
+      command: "{{ item }}"
+      with_items:
+      - 'rmmod platina-mk1'
+      - "modprobe platina-mk1 provision={{ fmodule_out.hash_dict['command'] }}"
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
+      - 'goes restart'
+      ignore_errors: yes
+      when: not dry_run  
+  
+    - set_fact:
+        commands: "{{ item }}"
+      with_items:
+      - 'rmmod platina-mk1'
+      - "modprobe platina-mk1 provision={{ fmodule_out.hash_dict['command'] }}"
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
+      - 'goes restart'
+      when: dry_run
+
+    - name: Wait few seconds for GOES to come up
+      pause:
+        seconds: 10
+      when: not dry_run
+
+    - name: Goes status
+      command: goes status
+      register: result
+      retries: "{{ goes_retry }}"
+      delay: "{{ goes_delay }}"
+      until: result.rc == 0
+      when: not dry_run
+
+    - name: Verify speed values
+      test_port_link:
+        switch_name: "{{ inventory_hostname }}"
+        speed: "10g"
+        is_subports: True
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
+        platina_redis_channel: "{{ platina_redis_channel }}"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ flow_control_log_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - name: Verify speed
+      test_port_link:
+        switch_name: "{{ inventory_hostname }}"
+        speed: "10g"
+        is_subports: True
+        f_ports: "{{ fmodule_out.hash_dict['eth_list'] }}"
+        platina_redis_channel: "{{ platina_redis_channel }}"
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        log_dir_path: "{{ flow_control_log_dir }}"
+      register: module_out
+      delegate_to: 127.0.0.1
+      when: dry_run
+
+    - set_fact:
+        dry_run_cmds: "{{ dry_run_out.cmds }}"
+      when: dry_run
+
+    - command: "date +%Y%m%d%T"
+      register: end_time
+      when: not dry_run
+
+    - name: Fetch the log file
+      slurp:
+        src: "{{ module_out.log_file_path }}"
+      register: logs
+      when: not dry_run
+
+    - name: Store the test result in a hash in redis db on server emulator
+      store_result_in_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+        start_time: "{{ hostvars['server_emulator']['start_time'] }}"
+        end_time: "{{ end_time.stdout }}"
+        hash_dict: "{{ module_out.hash_dict }}"
+        log_content: "{{ logs['content'] | b64decode }}"
+      delegate_to: 127.0.0.1
+      ignore_errors: yes
+      when: not dry_run
+
+    - copy:
+        src: "../../files/show_tech.py"
+        dest: /tmp/show_tech.py
+        mode: 0755
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - command: "/tmp/./show_tech.py --path /var/log/show_tech/ --hash_name {{ hostvars['server_emulator']['hash_name'] }}"
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+    - file:
+        path: /tmp/show_tech.py
+        state: absent
+      when: module_out.hash_dict['result.status'] == "Failed"
+      ignore_errors: yes
+
+- hosts: leaf[0]
+  become: true
+  ignore_errors: yes
+  tasks:
+    - name: get the mac address details
+      shell: python -m getmac -i 'xeth4'
+      register: mac_address
+
+    - debug:
+        var: mac_address.stdout
+
+    - set_fact:
+        mac_address: "{{ mac_address.stdout }}"
+
+- hosts: packet_generator
+  gather_facts: no
+  ignore_errors: yes
+  tasks:
+    - name: Copy the BCM file
+      template:
+        src: ../../templates/bcm.py
+        dest: ~/tmp/
+        mode: 0755
+
+    - name: Copy the file to stop the stream
+      template:
+        src: ../../templates/stop_stream_all
+        dest: ~/tmp/
+        mode: 0755
+
+    - name: Copy the Snabb utility
+      copy:
+        src: ../../files/snabb.j2
+        dest: ~/tmp/snabb
+        mode: 0755
+
+    - name: Run the BCM file
+      shell: ~/tmp/bcm.py "ps ce1"
+      when: not dry_run
+
+    - name: Stop all stream
+      shell: ~/tmp/bcm.py "cint stoploop.cint"
+      when: not dry_run
+
+    - name: Initiate traffic
+      initiate_traffic:
+        switch_name: "{{ inventory_hostname }}"
+        target_switch: "{{ groups['leaf'][0] }}"
+        mac_address: hostvars['{{ groups['leaf'][0] }}']['mac_address']
+      ignore_errors: yes
+      when: not dry_run

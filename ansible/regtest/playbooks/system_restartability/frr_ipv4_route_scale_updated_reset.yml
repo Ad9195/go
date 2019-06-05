@@ -1,0 +1,32 @@
+---
+
+- hosts: leaf:spine
+  become: true
+  tasks:
+    - name: Restore backup of /etc/network/interfaces
+      copy:
+        src: "{{ network_interfaces_file_bck }}"
+        dest: "{{ network_interfaces_file }}"
+        remote_src: true
+      when: not dry_run
+
+    - name: Remove backup file
+      file:
+        path: "{{ network_interfaces_file_bck }}"
+        state: absent
+      when: not dry_run
+
+    - file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+      - /var/log/linux_routes.txt
+      - /var/log/frr_routes.txt
+      - /var/log/arp_entries.txt
+
+    - name: Execute commands
+      command: "{{ item }}"
+      with_items:
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
+      - 'goes restart'

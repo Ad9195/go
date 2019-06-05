@@ -6,8 +6,11 @@
 # Upgrade BMC
 - include: playbooks/upgrade/bmc_upgrade.yml
 
-# Downgrade and Upgrade Coreboot
-- include: playbooks/upgrade/coreboot_upgrade_updated.yml
+# Downgrade Coreboot
+- include: playbooks/upgrade/coreboot_downgrade.yml
+
+# Upgrade Coreboot
+- include: playbooks/upgrade/coreboot_upgrade.yml
 
 # Run goes boot playbooks
 - include: playbooks/upgrade/goes_boot.yml

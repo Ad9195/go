@@ -3,8 +3,16 @@
    become: true
    ignore_errors: true
    tasks:
-    - name: Quagga Installation
-      apt: name=quagga
+    - name: Download Quagga debian package file
+      get_url:
+         url: "{{ quagga_link }}"
+         dest: "/tmp/"
+         mode: 0640
+         validate_certs: no
+
+    - name: Install the Quagga debian package file
+      apt:
+         deb: "/tmp/{{ quagga_installer_name }}"
 
     - name: Enabling IPv4 and IPv6 Unicast Forwarding
       shell: "{{ item }}"

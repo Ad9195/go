@@ -240,6 +240,10 @@
     - include_vars:
         file: ../../group_vars/{{ inventory_hostname }}/{{ container }}
 
+    - name: Wait few seconds
+      pause:
+        seconds: 20
+
     - name: Verify quagga ospf traffic inside R1 container
       test_docker_ospf:
         switch_name: "{{ inventory_hostname }}"
@@ -283,6 +287,10 @@
         state: absent
       when: module_out.hash_dict['result.status'] == "Failed"
       ignore_errors: yes
+
+    - name: Wait few seconds
+      pause:
+        seconds: 20
 
 
 - hosts: leaf:spine

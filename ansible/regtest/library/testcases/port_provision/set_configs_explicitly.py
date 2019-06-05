@@ -212,6 +212,11 @@ def alter_configs(module):
     eth_list = ['1', '3', '5', '7', '9', '11', '13', '15', '17', '19', '21', '23', '25', '27', '29', '31']
 
     if not is_subports:
+	for ele in module.params['f_ports']:
+                try:
+                        eth_list.remove(str(ele))
+                except:
+                        pass
         if parameter == 'fec' and value == 'cl74':
             for eth in eth_list:
                 cmd = 'ethtool --set-priv-flags xeth{} fec91 off'.format(eth)
@@ -243,7 +248,11 @@ def alter_configs(module):
             subports = ['1', '2', '3', '4']
         else:
             subports = ['1', '2']
-
+	for ele in module.params['f_ports']:
+                try:
+                        eth_list.remove(str(ele))
+                except:
+                        pass
         if parameter == 'fec' and value == 'cl74':
             for eth in eth_list:
                 for port in subports:
@@ -304,6 +313,11 @@ def verify_port_links(module):
     failure_summary += verify_networking_status(module, switch_name)
 
     if not is_subports:
+	for ele in module.params['f_ports']:
+                try:
+                        eth_list.remove(str(ele))
+                except:
+                        pass
         for eth in eth_list:
             # Verify speed of interfaces are set to correct value
             if parameter == 'speed':
@@ -343,7 +357,11 @@ def verify_port_links(module):
             subports = ['1', '2', '3', '4']
         else:
             subports = ['1', '2']
-
+	for ele in module.params['f_ports']:
+                try:
+                        eth_list.remove(str(ele))
+                except:
+                        pass
         for eth in eth_list:
             for port in subports:
                 # Verify speed of interfaces are set to correct value
@@ -396,6 +414,7 @@ def main():
             speed=dict(required=False, type='str'),
             media=dict(required=False, type='str'),
             fec=dict(required=False, type='str', default=''),
+	    f_ports=dict(required=False, type='list', default=[]),
             autoneg=dict(required=False, type='str', default=''),
             platina_redis_channel=dict(required=False, type='str'),
             is_subports=dict(required=False, type='bool', default=False),

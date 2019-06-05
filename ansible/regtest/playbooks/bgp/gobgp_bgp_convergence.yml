@@ -49,7 +49,7 @@
         switch_name: "{{ inventory_hostname }}"
 
     - pause:
-        seconds: "{{ package_delay }}"
+        seconds: 50
 
 
 - hosts: leaf[1]
@@ -61,7 +61,7 @@
         remove: True
 
     - pause:
-        seconds: "{{ package_delay }}"
+        seconds: 50
 
 
 - hosts: leaf[0]:spine
@@ -72,7 +72,7 @@
         switch_name: "{{ inventory_hostname }}"
         leaf: "{{ groups['leaf'][1] }}"
         package_name: "gobgpd"
-        delay: "20"
+        delay: "10"
         retries: "15"
         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
         log_dir_path: "{{ bgp_log_dir }}"

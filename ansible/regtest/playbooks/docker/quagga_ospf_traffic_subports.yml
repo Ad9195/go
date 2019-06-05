@@ -75,9 +75,11 @@
       command: "{{ item }}"
       with_items:
       - 'rmmod platina-mk1'
-      - 'modprobe platina-mk1 provision=4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4'
-      - '/etc/init.d/networking restart'
+      - 'modprobe platina-mk1 provision=4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1'
+      - 'ifdown -a --allow vnet'
+      - 'ifup -a --allow vnet'
       - 'goes restart'
+      ignore_errors: yes
 
 
 - hosts: leaf[0]
@@ -121,6 +123,9 @@
       with_items:
       - "{{ containers }}"
 
+    - name: Wait few seconds for docker to up
+      pause:
+        seconds: 10
 
 - hosts: leaf[1]
   become: true
@@ -163,6 +168,9 @@
       with_items:
       - "{{ containers }}"
 
+    - name: Wait few seconds for docker to up
+      pause:
+        seconds: 10
 
 - hosts: spine[0]
   become: true
@@ -205,7 +213,9 @@
       with_items:
       - "{{ containers }}"
 
-
+    - name: Wait few seconds for docker to up
+      pause:
+        seconds: 10
 
 - hosts: spine[1]
   become: true
@@ -251,6 +261,10 @@
         state: 'up'
       with_items:
       - "{{ containers }}"
+    
+    - name: Wait few seconds for docker to up
+      pause:
+        seconds: 30
 
     - file:
         path: "{{ docker_log_dir }}"
