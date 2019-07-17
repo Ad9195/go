@@ -15,6 +15,7 @@ goes_retry: 3
 
 regression_summary_report: /var/log/regression/regression_summary_file_{{ testbed_name }}
 
+blackhole_route_dir: /var/log/regression/black_hole
 bgp_log_dir: /var/log/regression/bgp
 ospf_log_dir: /var/log/regression/ospf
 isis_log_dir: /var/log/regression/isis
@@ -58,6 +59,9 @@ quagga_isis_conf_file: /etc/quagga/isisd.conf
 quagga_isis_conf_file_bck: /etc/quagga/isisd.conf.bck
 quagga_zebra_conf_file: /etc/quagga/zebra.conf
 quagga_zebra_conf_file_bck: /etc/quagga/zebra.conf.bck
+
+state_override_file: /var/lib/dpkg/statoverride
+state_override_file_bck: /var/lib/dpkg/statoverride.bck
 
 gobgp_bgp_conf_file: /etc/gobgp/gobgpd.conf
 gobgp_bgp_conf_file_bck: /etc/gobgp/gobgpd.conf.bck
@@ -112,3 +116,22 @@ downgrade_cmd: 'upgrade -v v1.2.0-rc0 -s 172.17.2.28/downloads -f'
 #upgrade_cmd: 'upgrade -v master -s downloads.platinasystems.com/TEST -f'
 upgrade_cmd: 'upgrade -v kph -s 172.17.2.28/downloads'
 
+#### PCC ####
+pcc_user: 'admin'
+pcc_password: 'admin'
+pcc_node1: 'invader29'
+pcc_node2: 'invader30'
+pcc_node3: 'invader31'
+pcc_node4: 'invader32'
+node1_host: '172.17.2.29'
+node2_host: '172.17.2.30'
+node3_host: '172.17.2.31'
+node4_host: '172.17.2.32'
+
+## Role ID
+goes: 1
+lldp: 2
+ospf: 3
+bgp: 4
+wordpress: 5
+mass: 6

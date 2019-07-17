@@ -221,14 +221,14 @@ def verify_port_links(module):
                 failure_summary += 'port link is not up '
                 failure_summary += 'for the interface xeth{} {} powercycle\n'.format(eth, state)
 
-    # Verify cmdline status
-    cmd = 'redis-cli -h 172.17.3.{} hget platina-mk1-bmc "cmdline.start"'.format(switch_name[-2::])
-    out = execute_commands(module, cmd)
-    if 'true' not in out:
-        RESULT_STATUS = False
-        failure_summary += 'On switch {} '.format(switch_name)
-        failure_summary += 'command line is not working '
-        failure_summary += '{} powercycle\n'.format(state)
+    # Verify cmdline status    below command are not valid for current version of redis
+    #cmd = 'redis-cli -h 172.17.3.{} hget platina-mk1-bmc "cmdline.start"'.format(switch_name[-2::])
+    #out = execute_commands(module, cmd)
+    #if 'true' not in out:
+    #    RESULT_STATUS = False
+    #    failure_summary += 'On switch {} '.format(switch_name)
+    #    failure_summary += 'command line is not working '
+    #    failure_summary += '{} powercycle\n'.format(state)
 
     HASH_DICT['result.detail'] = failure_summary
 

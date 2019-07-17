@@ -7,7 +7,7 @@
 - include: playbooks/upgrade/bmc_upgrade.yml
 
 # Downgrade Coreboot
-- include: playbooks/upgrade/coreboot_downgrade.yml
+#- include: playbooks/upgrade/coreboot_downgrade.yml
 
 # Upgrade Coreboot
 - include: playbooks/upgrade/coreboot_upgrade.yml

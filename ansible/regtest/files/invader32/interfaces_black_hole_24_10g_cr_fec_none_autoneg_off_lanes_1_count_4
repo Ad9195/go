@@ -1,0 +1,980 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth0
+#iface eth0 inet dhcp
+
+auto eth0
+iface eth0 inet static
+  address 172.17.2.32
+  netmask 255.255.254.0
+  gateway 172.17.2.1
+  dns-nameservers 8.8.8.8 8.8.4.4
+
+auto xeth1-1
+iface xeth1-1 inet static
+    address 10.1.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth1-1
+
+auto xeth1-2
+iface xeth1-2 inet static
+    address 10.1.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth1-2
+
+auto xeth1-3
+iface xeth1-3 inet static
+    address 10.1.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth1-3
+
+auto xeth1-4
+iface xeth1-4 inet static
+    address 10.1.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth1-4
+
+auto xeth2
+iface xeth2 inet static
+    address 10.0.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth2
+
+auto xeth3-1
+iface xeth3-1 inet static
+    address 10.3.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth3-1
+
+auto xeth3-2
+iface xeth3-2 inet static
+    address 10.3.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth3-2
+
+auto xeth3-3
+iface xeth3-3 inet static
+    address 10.3.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth3-3
+
+auto xeth3-4
+iface xeth3-4 inet static
+    address 10.3.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth3-4
+
+auto xeth4
+iface xeth4 inet static
+    address 10.0.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth4
+
+auto xeth5-1
+iface xeth5-1 inet static
+    address 10.5.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+pre-up ip route add blackhole 10.5.1.0/24
+post-down ip link set $IFACE down
+allow-vnet xeth5-1
+
+auto xeth5-2
+iface xeth5-2 inet static
+    address 10.5.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth5-2
+
+auto xeth5-3
+iface xeth5-3 inet static
+    address 10.5.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth5-3
+
+auto xeth5-4
+iface xeth5-4 inet static
+    address 10.5.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth5-4
+
+auto xeth6
+iface xeth6 inet static
+    address 10.0.6.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth6
+
+auto xeth7-1
+iface xeth7-1 inet static
+    address 10.7.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth7-1
+
+auto xeth7-2
+iface xeth7-2 inet static
+    address 10.7.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth7-2
+
+auto xeth7-3
+iface xeth7-3 inet static
+    address 10.7.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth7-3
+
+auto xeth7-4
+iface xeth7-4 inet static
+    address 10.7.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth7-4
+
+auto xeth8
+iface xeth8 inet static
+    address 10.0.8.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth8
+
+auto xeth9-1
+iface xeth9-1 inet static
+    address 10.9.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth9-1
+
+auto xeth9-2
+iface xeth9-2 inet static
+    address 10.9.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth9-2
+
+auto xeth9-3
+iface xeth9-3 inet static
+    address 10.9.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth9-3
+
+auto xeth9-4
+iface xeth9-4 inet static
+    address 10.9.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth9-4
+
+auto xeth10
+iface xeth10 inet static
+    address 10.0.10.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth10
+
+auto xeth11-1
+iface xeth11-1 inet static
+    address 10.11.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth11-1
+
+auto xeth11-2
+iface xeth11-2 inet static
+    address 10.11.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth11-2
+
+auto xeth11-3
+iface xeth11-3 inet static
+    address 10.11.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth11-3
+
+auto xeth11-4
+iface xeth11-4 inet static
+    address 10.11.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth11-4
+
+auto xeth12
+iface xeth12 inet static
+    address 10.0.12.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth12
+
+auto xeth13-1
+iface xeth13-1 inet static
+    address 10.13.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth13-1
+
+auto xeth13-2
+iface xeth13-2 inet static
+    address 10.13.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth13-2
+
+auto xeth13-3
+iface xeth13-3 inet static
+    address 10.13.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth13-3
+
+auto xeth13-4
+iface xeth13-4 inet static
+    address 10.13.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth13-4
+
+auto xeth14
+iface xeth14 inet static
+    address 10.0.14.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth14
+
+auto xeth15-1
+iface xeth15-1 inet static
+    address 10.15.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth15-1
+
+auto xeth15-2
+iface xeth15-2 inet static
+    address 10.15.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth15-2
+
+auto xeth15-3
+iface xeth15-3 inet static
+    address 10.15.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth15-3
+
+auto xeth15-4
+iface xeth15-4 inet static
+    address 10.15.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth15-4
+
+auto xeth16
+iface xeth16 inet static
+    address 10.0.16.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth16
+
+auto xeth17-1
+iface xeth17-1 inet static
+    address 10.17.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth17-1
+
+auto xeth17-2
+iface xeth17-2 inet static
+    address 10.17.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth17-2
+
+auto xeth17-3
+iface xeth17-3 inet static
+    address 10.17.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth17-3
+
+auto xeth17-4
+iface xeth17-4 inet static
+    address 10.17.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth17-4
+
+auto xeth18
+iface xeth18 inet static
+    address 10.0.18.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth18
+
+auto xeth19-1
+iface xeth19-1 inet static
+    address 10.19.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth19-1
+
+auto xeth19-2
+iface xeth19-2 inet static
+    address 10.19.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth19-2
+
+auto xeth19-3
+iface xeth19-3 inet static
+    address 10.19.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth19-3
+
+auto xeth19-4
+iface xeth19-4 inet static
+    address 10.19.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth19-4
+
+auto xeth20
+iface xeth20 inet static
+    address 10.0.20.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth20
+
+auto xeth21-1
+iface xeth21-1 inet static
+    address 10.21.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth21-1
+
+auto xeth21-2
+iface xeth21-2 inet static
+    address 10.21.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth21-2
+
+auto xeth21-3
+iface xeth21-3 inet static
+    address 10.21.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth21-3
+
+auto xeth21-4
+iface xeth21-4 inet static
+    address 10.21.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth21-4
+
+auto xeth22
+iface xeth22 inet static
+    address 10.0.22.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth22
+
+auto xeth23-1
+iface xeth23-1 inet static
+    address 10.23.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth23-1
+
+auto xeth23-2
+iface xeth23-2 inet static
+    address 10.23.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth23-2
+
+auto xeth23-3
+iface xeth23-3 inet static
+    address 10.23.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth23-3
+
+auto xeth23-4
+iface xeth23-4 inet static
+    address 10.23.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth23-4
+
+auto xeth24
+iface xeth24 inet static
+    address 10.0.24.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth24
+
+auto xeth25-1
+iface xeth25-1 inet static
+    address 10.25.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth25-1
+
+auto xeth25-2
+iface xeth25-2 inet static
+    address 10.25.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth25-2
+
+auto xeth25-3
+iface xeth25-3 inet static
+    address 10.25.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth25-3
+
+auto xeth25-4
+iface xeth25-4 inet static
+    address 10.25.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth25-4
+
+auto xeth26
+iface xeth26 inet static
+    address 10.0.26.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth26
+
+auto xeth27-1
+iface xeth27-1 inet static
+    address 10.27.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth27-1
+
+auto xeth27-2
+iface xeth27-2 inet static
+    address 10.27.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth27-2
+
+auto xeth27-3
+iface xeth27-3 inet static
+    address 10.27.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth27-3
+
+auto xeth27-4
+iface xeth27-4 inet static
+    address 10.27.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth27-4
+
+auto xeth28
+iface xeth28 inet static
+    address 10.0.28.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth28
+
+auto xeth29-1
+iface xeth29-1 inet static
+    address 10.29.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth29-1
+
+auto xeth29-2
+iface xeth29-2 inet static
+    address 10.29.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth29-2
+
+auto xeth29-3
+iface xeth29-3 inet static
+    address 10.29.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth29-3
+
+auto xeth29-4
+iface xeth29-4 inet static
+    address 10.29.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth29-4
+
+auto xeth30
+iface xeth30 inet static
+    address 10.0.30.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth30
+
+auto xeth31-1
+iface xeth31-1 inet static
+    address 10.31.1.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth31-1
+
+auto xeth31-2
+iface xeth31-2 inet static
+    address 10.31.2.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth31-2
+
+auto xeth31-3
+iface xeth31-3 inet static
+    address 10.31.3.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth31-3
+
+auto xeth31-4
+iface xeth31-4 inet static
+    address 10.31.4.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 10000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 off
+post-down ip link set $IFACE down
+allow-vnet xeth31-4
+
+auto xeth32
+iface xeth32 inet static
+    address 10.0.32.32
+    netmask 255.255.255.0
+pre-up ip link set $IFACE up
+pre-up ethtool -s $IFACE speed 100000 autoneg off
+pre-up ethtool --set-priv-flags $IFACE copper on
+pre-up ethtool --set-priv-flags $IFACE fec74 off
+pre-up ethtool --set-priv-flags $IFACE fec91 on
+post-down ip link set $IFACE down
+allow-vnet xeth32

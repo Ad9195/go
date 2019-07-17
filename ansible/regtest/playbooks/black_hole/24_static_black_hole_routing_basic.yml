@@ -1,0 +1,112 @@
+---
+- hosts: server_emulator
+  become: true
+
+  tasks:
+  - command: "date +%Y%m%d%T"
+    register: start_time
+
+  - set_fact:
+     hash_name: "24_static_blackhole_route_basic_{{ start_time.stdout }}"
+     start_time: "{{ start_time.stdout }}"
+
+- hosts: leaf[0]
+  become: true
+  tasks:
+    - name: delete ip route
+      add_del_blackhole_route:
+         switch_name: "{{ inventory_hostname }}"
+         eth_list: "5"
+         subnet_mask: "24"
+         spine_list: "{{ groups['spine'] }}"
+         leaf_list: "{{ groups['leaf'] }}"
+         hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+         delete: True
+         log_dir_path: "{{ blackhole_route_dir }}"
+
+    - name: Add a blackhole
+      add_del_blackhole_route:
+          switch_name: "{{ inventory_hostname }}"
+          eth_list: "5"
+          subnet_mask: "24"
+          spine_list: "{{ groups['spine'] }}"
+          leaf_list: "{{ groups['leaf'] }}"
+          hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+          log_dir_path: "{{ blackhole_route_dir }}"
+
+
+    - name: Verify black hole addition to tables
+      verify_blackhole_route:
+          switch_name: "{{ inventory_hostname }}"
+          eth_list: "5"
+          subnet_mask: "24"
+          spine_list: "{{ groups['spine'] }}"
+          leaf_list: "{{ groups['leaf'] }}"
+          hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+          log_dir_path: "{{ blackhole_route_dir }}"
+      register: module_out
+      when: not dry_run
+
+    - file:
+          path: "{{ blackhole_route_dir }}"
+          state: directory
+      when: not dry_run
+
+    - command: "date +%Y%m%d%T"
+      register: end_time
+      when: not dry_run
+
+    - name: Fetch the log file
+      slurp:
+        src: "{{ module_out.log_file_path }}"
+      register: logs
+      when: not dry_run
+
+    - name: Store the test result in a hash in redis db on server emulator
+      store_result_in_redis:
+              hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+              start_time: "{{ hostvars['server_emulator']['start_time'] }}"
+              end_time: "{{ end_time.stdout }}"
+              hash_dict: "{{ module_out.hash_dict }}"
+              log_content: "{{ logs['content'] | b64decode }}"
+      delegate_to: 127.0.0.1
+      ignore_errors: yes
+      when: not dry_run
+
+- include: black_hole_reset.yml
+  when:
+    - reset_config
+    - not dry_run
+
+- hosts: server_emulator
+  become: true
+  tasks:
+    - name: Get the test result from redis db
+      get_test_result_from_redis:
+        hash_name: "{{ hostvars['server_emulator']['hash_name'] }}"
+      register: result
+      when: not dry_run
+
+    - name: Print test case result
+      debug:
+        msg: "Test case result: {{ result.result_status }}"
+      when: not dry_run
+
+    - name: Print failure summary
+      debug:
+        msg: "Failure summary: {{ result.result_detail }}"
+      when: not dry_run
+
+    - lineinfile:
+        path: "{{ regression_summary_report }}"
+        line: "{{ hash_name }}: {{ result.result_status }}"
+      when: not dry_run
+
+- hosts: leaf:spine
+  become: true
+  gather_facts: no
+  tasks:
+    - include: ../../playbooks/get_goes_status.yml start_time={{ hostvars['server_emulator']['start_time'] }} hash_name={{ hostvars['server_emulator']['hash_name'] }}
+      when: not dry_run
+      ignore_errors: yes
+

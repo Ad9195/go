@@ -11,6 +11,20 @@
         mode: 0640
         validate_certs: no
 
+   - name: Take backup of stateoverride file
+     copy:
+       src: "{{ state_override_file }}"
+       dest: "{{ state_override_file_bck }}"
+       remote_src: true
+     when: not dry_run
+
+   - name: Copy stateoverride file
+     copy:
+       src: "../../files/{{ inventory_hostname }}/statoverride"
+       dest: "{{ state_override_file }}"
+     when: not dry_run
+
+
    - name: Install the Quagga debian package file
      apt:
         deb: "/tmp/{{ quagga_installer_name }}"
@@ -94,6 +108,9 @@
          [Install]
          WantedBy=multi-user.target
 
+   - name: Remove Quagga installed file
+     shell: "rm -f /tmp/{{ quagga_installer_name }}"
+
    - file:
        path: "{{ gobgp_dir }}"
        state: directory
@@ -108,3 +125,15 @@
      service:
         name: gobgpd
         state: restarted
+
+   - name: Restore backup of /etc/network/interfaces
+     copy:
+       src: "{{ state_override_file_bck }}"
+       dest: "{{ state_override_file }}"
+       remote_src: true
+
+   - name: Remove backup file
+     file:
+       path: "{{ state_override_file_bck }}"
+       state: absent
+

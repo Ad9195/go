@@ -27,7 +27,10 @@
   - vtysh.conf
   - zebra.conf
 
-- name: Uninstall Quagga
+- name: Quagga Uninstallation
   apt:
     name: quagga
     state: absent
+    force: yes
+    autoremove: yes
+    purge: yes

@@ -159,3 +159,6 @@
   become: true
   tasks:
     - include: ../../playbooks/get_goes_status.yml start_time={{ hostvars['server_emulator']['start_time'] }} hash_name={{ hostvars['server_emulator']['hash_name'] }}
+
+# Reset the setup
+- include: ../../playbooks/master_reset_invaders.yml

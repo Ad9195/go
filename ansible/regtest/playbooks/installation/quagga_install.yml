@@ -10,6 +10,19 @@
          mode: 0640
          validate_certs: no
 
+    - name: Take backup of stateoverride file
+      copy:
+        src: "{{ state_override_file }}"
+        dest: "{{ state_override_file_bck }}"
+        remote_src: true
+      when: not dry_run
+
+    - name: Copy stateoverride file
+      copy:
+        src: "../../files/{{ inventory_hostname }}/statoverride"
+        dest: "{{ state_override_file }}"
+      when: not dry_run
+
     - name: Install the Quagga debian package file
       apt:
          deb: "/tmp/{{ quagga_installer_name }}"
@@ -92,6 +105,9 @@
     - name: Copy vtysh running config to startup config
       command: "vtysh -c 'copy running-config startup-config'"
 
+    - name: Remove quagga installer file
+      shell: "rm -f /tmp/{{ quagga_installer_name }}"
+
     - lineinfile:
         path: /etc/quagga/bgpd.conf
         regexp: "{{ item }}"
@@ -109,3 +125,14 @@
         - "ip router"
         - "net"
         - "metric-style"
+
+    - name: Restore backup of /etc/network/interfaces
+      copy:
+        src: "{{ state_override_file_bck }}"
+        dest: "{{ state_override_file }}"
+        remote_src: true
+
+    - name: Remove backup file
+      file:
+        path: "{{ state_override_file_bck }}"
+        state: absent

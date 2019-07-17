@@ -1,0 +1,35 @@
+---
+- hosts: leaf[0]
+  become: true
+  ignore_errors: yes
+  tasks:
+    - name: Delete ip routes
+      command: "{{ item }}"
+      with_items:
+        - 'ip route delete 10.0.5.0/24'
+        - 'ip route delete 10.0.5.31/32'
+        - 'ip route delete 10.5.1.31/32'
+        - 'ip route delete 10.5.1.0/24'
+
+- hosts: leaf:spine
+  become: true
+  ignore_errors: yes
+  tasks:
+    - name: Copy default network interfaces file
+      template:
+          src: "../../files/{{inventory_hostname}}/network_interfaces_master"
+          dest: "{{ network_interfaces_file }}"
+
+    - name: Copy default goesd-platina-mk1-modprobe.conf file
+      copy:
+          src: "../../files/goesd-platina-mk1-modprobe.conf"
+          dest: "/etc/modprobe.d/goesd-platina-mk1-modprobe.conf"
+
+    - name: Goes restart
+      command: "{{ item }}"
+      with_items:
+          - 'rmmod platina-mk1'
+          - 'modprobe platina-mk1 provision=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1'
+          - 'ifdown -a --allow vnet'
+          - 'ifup -a --allow vnet'
+          - 'goes restart'

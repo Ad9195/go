@@ -1,0 +1,29 @@
+---
+
+# Reset the setup
+- include: playbooks/master_reset_invaders.yml
+
+# Run the black hole test cases
+- include: playbooks/black_hole/24_black_hole_routing_basic.yml
+
+- include: playbooks/black_hole/24_static_black_hole_routing_basic.yml
+
+- include: playbooks/black_hole/32_black_hole_routing_basic.yml
+
+- include: playbooks/black_hole/32_static_black_hole_route_basic.yml
+
+- include: playbooks/black_hole/black_hole_24_10g_cr_fec_none_autoneg_off_lanes_1_count_4.yml
+
+- include: playbooks/black_hole/black_hole_32_10g_cr_fec_none_autoneg_off_lanes_1_count_4.yml
+
+- include: playbooks/black_hole/black_hole_static_24_10g_cr_fec_none_autoneg_off_lanes_1_count_4.yml
+
+- include: playbooks/black_hole/black_hole_static_32_10g_cr_fec_none_autoneg_off_lanes_1_count_4.yml
+
+#- include: playbooks/black_hole/16_static_black_hole_routing_basic.yml
+
+#- include: playbooks/black_hole/black_hole_static_16_10g_cr_fec_none_autoneg_off_lanes_1_count_4.yml
+
+# Reset the black hole
+
+- include: playbooks/black_hole/black_hole_reset.yml

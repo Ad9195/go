@@ -236,7 +236,7 @@ def verify_gobgp_peering(module):
     # Restart and check package status
     execute_commands(module, 'service {} restart'.format(package_name))
     execute_commands(module, 'service {} status'.format(package_name))
-    retry = retries
+    retry = retries - 1
     # Advertise the routes
     while(retry):
         failure_summary1 = ''
@@ -266,7 +266,7 @@ def verify_gobgp_peering(module):
                 execute_commands(module, down_cmd)
     time.sleep(delay)
 
-    retry = retries
+    retry = retries - 1
     while (retry):
         failure_summary2 = ''
         RESULT_STATUS = True
@@ -291,7 +291,7 @@ def verify_gobgp_peering(module):
     # Wait for 5 secs
     time.sleep(delay)
 
-    retry = retries
+    retry = retries - 1
     while (retry):
         failure_summary3 = ''
         RESULT_STATUS = True
@@ -300,7 +300,7 @@ def verify_gobgp_peering(module):
         failure_summary3 += verify_neighbor_relationship(module, "after up")
 
         if not RESULT_STATUS:
-            retries -= 1
+            retry -= 1
             time.sleep(delay)
         else:
             break
